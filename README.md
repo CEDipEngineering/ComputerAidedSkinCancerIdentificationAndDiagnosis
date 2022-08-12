@@ -1,4 +1,4 @@
-# ComputerAidedSkinCancerIdentificationAndDiagnosis
+# Computer Aided Skin Cancer Identification And Diagnosis
 CASCID or Computer Aided Skin Cancer Identification and Diagnosis.
 
 
