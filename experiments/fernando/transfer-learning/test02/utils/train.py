@@ -1,8 +1,7 @@
 from tensorflow import keras
 import pandas as pd
 
-def series_to_array(pandas_series):
-    classes_dictionary = get_classes_dictionary(pandas_series)
+def series_to_array(pandas_series, classes_dictionary):
     pandas_series_to_integer = series_to_integer(pandas_series, classes_dictionary)
     return keras.utils.to_categorical(pandas_series_to_integer)
 
