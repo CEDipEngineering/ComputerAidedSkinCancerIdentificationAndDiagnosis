@@ -1,2 +1,8 @@
 -e .
 
+pandas
+matplotlib
+numpy
+opencv-contrib-python
+pexpect
+scikit-image
