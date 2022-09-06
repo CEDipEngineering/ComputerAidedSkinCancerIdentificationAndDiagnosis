@@ -1,2 +1,7 @@
 -e .
 
+pandas
+matplotlib
+numpy
+opencv-contrib-python
+sklearn
