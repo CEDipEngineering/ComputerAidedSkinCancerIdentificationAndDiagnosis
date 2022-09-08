@@ -101,3 +101,25 @@ def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
         axList[2*i+1].plot(hist3, label='blue', color='blue')
         axList[2*i+1].legend()
     return fig
+
+
+
+def image_grid(images, cols = 4):
+    '''
+    Function to plot multiple images from list
+    Arguments:
+        - images: list of images to be shown
+        - cols: distribution parameter
+
+    Example:
+    image_grid(image_list, 2)
+    '''
+    n_images = len(images)
+    fig = plt.figure()
+    for n, (image) in enumerate(images):
+        a = fig.add_subplot(int(cols), int(np.ceil(n_images/float(cols))), n + 1)
+        if image.ndim == 2:
+            plt.gray()
+        plt.imshow(image)
+    fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
+    plt.show()
