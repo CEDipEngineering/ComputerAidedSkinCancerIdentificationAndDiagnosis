@@ -11,7 +11,8 @@ def get_db() -> pd.DataFrame:
         print("File not found: ", e)
         print("Downloading dataset now:")
         install.install_data_ufes(True)
-    return df
+        return pd.read_csv(pad_ufes.METADATA) 
+    return df 
 
 if __name__ == "__main__":
     # Test function
