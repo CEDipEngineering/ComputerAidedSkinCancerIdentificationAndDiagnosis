@@ -3,10 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from pathlib import Path
+from cascid.configs import pad_ufes
 
-DATA_DIR = Path(__file__).parents[1]/'data'
 
-IMAGE_DIR = DATA_DIR / "images"
+DATA_DIR = pad_ufes.METADATA
+
+IMAGE_DIR = pad_ufes.IMAGES_DIR
 
 def plot_age_distribution(df: pd.DataFrame) -> plt.figure:
     '''
@@ -123,3 +125,28 @@ def image_grid(images, cols = 4):
         plt.imshow(image)
     fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
     plt.show()
+
+
+def save_preprocessed_imgs(img_path, func, dest_dir):
+    '''
+    Function to save preprocessed images
+    Arguments:
+        - img_path: original image path
+        - func: preprocessing function
+        - dest_dir: directory in which images will be saved
+
+    Example:
+    # Preprocess all dataset images, removing hairs
+    save_preprocessed_imgs(df, image_preprocessing.remove_hairs, DEST_DIR)
+    '''
+    try:
+        # If preprocessed image already exists, do nothing
+            img_name = Path(img_path).name
+            img = cv2.imread(dest_dir+img_name)[:,:,::-1]
+            print("already processed: "+dest_dir+img_name)
+    except:
+        # If preprocessed image does not exist, create it
+            img = cv2.imread(img_path)[:,:,::-1]
+            processed = func(img)
+            cv2.imwrite(dest_dir, processed[:,:,::-1])
+            print("saving image: "+dest_dir)
