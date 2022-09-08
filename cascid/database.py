@@ -1,8 +1,18 @@
+#!/usr/bin/env python3
 from pathlib import Path
 import pandas as pd
-
-DATA_DIR = Path(__file__).parents[1]/'data'
-DB_FILE = DATA_DIR / "metadata.csv"
+from cascid.configs import pad_ufes
+from cascid import install
 
 def get_db() -> pd.DataFrame:
-    return pd.read_csv(DB_FILE)
+    try:
+        df = pd.read_csv(pad_ufes.METADATA)
+    except FileNotFoundError as e:
+        print("File not found: ", e)
+        print("Downloading dataset now:")
+        install.install_data_ufes(True)
+    return df
+
+if __name__ == "__main__":
+    # Test function
+    print(get_db().head(5).transpose())
