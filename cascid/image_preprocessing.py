@@ -11,7 +11,7 @@ def remove_hairs(img):
         - Processed image without hairs
 
     Example:
-    edges, thresh, dst = remove_hairs(img)
+    dst = remove_hairs(img)
     '''
     kernel = cv2.getStructuringElement(1,(17,17))
     gray = cv2.cvtColor( img, cv2.COLOR_RGB2GRAY )
@@ -19,7 +19,8 @@ def remove_hairs(img):
     ret,thresh = cv2.threshold(edges,10,255,cv2.THRESH_BINARY)
     dst = cv2.inpaint(img,thresh,1,cv2.INPAINT_TELEA)
     
-    return edges, thresh, dst
+    return dst
+
 
 def adaptive_histeq(img_gray):
     '''
@@ -35,6 +36,13 @@ def adaptive_histeq(img_gray):
     clahe = cv2.createCLAHE(clipLimit = 2.0, tileGridSize=(8,8))
     final_img = clahe.apply(img_gray) 
     return final_img
+
+def simple_processing_clahe(img):
+    
+    gray = cv2.cvtColor( img, cv2.COLOR_RGB2GRAY )
+    clahe=adaptive_histeq(gray)
+    return clahe
+
 
 
 def lesion_segmentation(img):
@@ -90,10 +98,16 @@ def preprocessing_article(img):
     norm_img = np.zeros((800,800))
     r_norm = cv2.normalize(R,  norm_img, 0, 255, cv2.NORM_MINMAX)
 
+    return r_norm
+
+def preprocessing_article_histeq(img):
+  
+    r_norm = preprocessing_article(img)
     blur = cv2.GaussianBlur(r_norm,(7,7),0)
     imgeq=adaptive_histeq(blur)
     
     return imgeq
+    
 
 
 def enhance_contrast_ab(img, alpha_value, beta_value):
@@ -136,3 +150,9 @@ def preprocessing_lab_histeq(img):
     enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
 
     return enhanced_img
+
+def preprocessing_lab_histeq_grey(img):
+    processed = preprocessing_lab_histeq(img)
+    gray = cv2.cvtColor( processed, cv2.COLOR_RGB2GRAY )
+
+    return gray

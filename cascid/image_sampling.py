@@ -67,6 +67,32 @@ def show_sample_pictures(df: pd.DataFrame, n_samples=9) -> plt.figure:
     # fig.show()
     return fig
 
+
+
+def apply_processing_show_sample_pictures(df: pd.DataFrame, func, n_samples=9):
+    '''
+    Function to process <n_samples> images from the dataframe with a specific
+    function and show the results.
+    Arguments:
+        - df: dataframe containing image information
+        - func: image preprocessing function
+        - n_samples: number of images to process/show
+
+    '''
+    microdf = df.sample(n_samples, random_state=42).reset_index()
+    imgs = microdf['img_id'].to_list()
+    diganosis = microdf['diagnostic'].to_list()
+    patients = microdf['patient_id'].to_list()
+    results = []
+    for i in range(n_samples):
+        filename = str(pad_ufes.IMAGES_DIR / imgs[i])
+        img = cv2.imread(filename)[:,:,::-1]
+        processed = func(img)
+        results.append(processed)
+    return results
+        
+
+
 def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
     '''
     Function to show <n_samples> images from dataframe beside their color histogram.
@@ -150,3 +176,4 @@ def save_preprocessed_imgs(img_path, func, dest_dir):
             processed = func(img)
             cv2.imwrite(dest_dir, processed[:,:,::-1])
             print("saving image: "+dest_dir)
+
