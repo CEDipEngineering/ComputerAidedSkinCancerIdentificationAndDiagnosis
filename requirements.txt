@@ -4,4 +4,7 @@ pandas
 matplotlib
 numpy
 opencv-contrib-python
-sklearn
+scikit-learn
+pexpect
+scikit-image
+tensorflow
