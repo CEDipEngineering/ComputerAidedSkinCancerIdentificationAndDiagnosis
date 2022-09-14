@@ -16,22 +16,13 @@ def install_data_ufes(FORCE_INSTALL=False):
     FORCE_INSTALL parameter forces deletion and reinstall of dataset.
     '''
     
-    install_dir = pad_ufes.DATA_DIR # Dir to install dataset
-    pad_ufes_dir = pad_ufes.PAD_UFES_DIR # Dir for PAD UFES
-    
-    # If no install dir, make one
-    if FORCE_INSTALL:
-        print("Would delete everything")
-        # rmtree(install_dir)
-    try:
-        os.mkdir(install_dir)
-    except OSError as ex:
-        if ex.errno != 17: # Directory already exists
-            print(ex)
-            raise OSError()
-    
-    if len(os.listdir(install_dir)) == 0 or FORCE_INSTALL: # Force install ensures download
-        # File url
+    pad_ufes_dir = pad_ufes.PAD_UFES_DIR # Dir for PAD UFES    
+    if FORCE_INSTALL: # Force install ensures download
+        
+        rmtree(pad_ufes.PAD_UFES_DIR.parents[1]) # Erase everything
+        pad_ufes.IMAGES_DIR.mkdir(parents=True, exist_ok=True) # Make it real
+
+        # File url 
         url = "https://md-datasets-cache-zipfiles-prod.s3.eu-west-1.amazonaws.com/zr7vgbcyr2-1.zip"
 
         # Split URL to get the file name
