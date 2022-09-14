@@ -8,7 +8,7 @@ import { metrics } from '../../global/styles/metrics';
 import logoHorizontal from "../../assets/logo-horizontal-bold.png"
 import { Button } from '../../components/Button';
 
-export function HomeScreen() {
+export function HomeScreen({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <Image 
@@ -28,7 +28,10 @@ export function HomeScreen() {
           <Button 
             text={"analyze"}
             textColor={theme.colors.white}
-            OnPress={()=> console.log("pressed")}
+            OnPress={()=> {
+              console.log("navigate!")
+              navigation.navigate('CameraScreen')
+            }}
             extraStyle={{
               backgroundColor: theme.colors.primary,
               fontSize: metrics.textSize,

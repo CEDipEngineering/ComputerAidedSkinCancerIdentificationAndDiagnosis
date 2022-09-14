@@ -1,8 +1,7 @@
 import React from "react";
 import { StatusBar, View } from "react-native";
 
-import { Routes } from "./src/routes";
-
+import Router  from "./src/routes";
 
 export default function App() {
   return (
@@ -13,7 +12,7 @@ export default function App() {
         translucent
       >
       </StatusBar>
-      <Routes/>
+      <Router/>
     </View>
   );
 }
