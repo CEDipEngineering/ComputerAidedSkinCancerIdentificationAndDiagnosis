@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 import os
-import errno
-from os import path
-import sys
 from pathlib import Path
 import requests, zipfile
 from io import BytesIO
@@ -19,7 +16,7 @@ def install_data_ufes(FORCE_INSTALL=False):
     pad_ufes_dir = pad_ufes.PAD_UFES_DIR # Dir for PAD UFES    
     if FORCE_INSTALL: # Force install ensures download
         
-        rmtree(pad_ufes.PAD_UFES_DIR.parents[1]) # Erase everything
+        # rmtree(pad_ufes.PAD_UFES_DIR.parents[1]) # Erase everything
         pad_ufes.IMAGES_DIR.mkdir(parents=True, exist_ok=True) # Make it real
 
         # File url 
@@ -39,13 +36,13 @@ def install_data_ufes(FORCE_INSTALL=False):
         zf.extractall(pad_ufes_dir)
 
         # Extract individual image zips
-        img_folders = list(filter( lambda x: not x.endswith(".png"), os.listdir(Path(pad_ufes_dir) / "images"))) # Filter img folders
         img_zip_paths = list(map(lambda x: str(Path(pad_ufes_dir) / "images" / x), img_folders)) # Find zips
         for zip in img_zip_paths:
             with zipfile.ZipFile(zip, "r") as Zf:
                 Zf.extractall(Path(pad_ufes_dir) / "images") # Extract all
             os.remove(zip) # Erase zip after extract
 
+        img_folders = list(filter( lambda x: not x.endswith(".png"), os.listdir(Path(pad_ufes_dir) / "images"))) # Filter img folders
         print(img_folders)
 
         full_image_folder_paths = [Path(pad_ufes_dir) / "images" / f for f in img_folders] # Full folder paths
@@ -64,4 +61,4 @@ def install_data_ufes(FORCE_INSTALL=False):
 
     
 if __name__ == "__main__":
-    install_data_ufes(False)
+    install_data_ufes(True)
