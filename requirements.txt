@@ -6,3 +6,6 @@ numpy
 opencv-contrib-python
 pexpect
 scikit-image
+tensorflow
+keras
+scikit-learn
