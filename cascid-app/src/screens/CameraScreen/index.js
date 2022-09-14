@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TouchableOpacity, SafeAreaView} from "react-native";
+import { View, TouchableOpacity, SafeAreaView, Text} from "react-native";
 import { Camera } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,10 +48,16 @@ export function CameraScreen({navigation}) {
         <SafeAreaView style={styles.container}>
             <View style={styles.content}></View>
             <Camera
-                style={{ flex: 1 }}
+                style={{ 
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}
                 type={cameraType} 
                 flashMode={handleFlashMode(enableFlash)}
-                ref={camRef} />
+                ref={camRef}>
+                    <View style={styles.externalCircle}></View>
+                </Camera>
             <View style={styles.content}>
                 <MaterialIcons
                     name='flip-camera-android'

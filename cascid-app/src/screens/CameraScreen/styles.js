@@ -33,25 +33,15 @@ export const styles = StyleSheet.create({
         backgroundColor: theme.colors.white,
         borderRadius: 23,
     },
-    previewContainer: {
-        flex: 1,
-        marginHorizontal: metrics.margin,
-        marginVertical: iphone ? metrics.margin : 2 * metrics.margin,
-        justifyContent: 'space-between',
+
+    externalCircle: {
+        height: 80,
+        width: 80,
+        borderWidth: 3,
+        borderColor: theme.colors.gray,
+        borderRadius: 40,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
         alignItems: 'center'
-    },
-    photoPreview:{
-        width: '100%',
-        height: 300,
-        borderRadius: metrics.radius
-    },
-    identified:{
-        width: '100%',
-        height: 300,
-    },
-    macros:{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: "center"
     }
 })
