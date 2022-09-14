@@ -132,3 +132,6 @@ dmypy.json
 # Custom
 data/*
 data/
+model/
+model/*
+/model
