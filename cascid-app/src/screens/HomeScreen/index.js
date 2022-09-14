@@ -5,7 +5,7 @@ import { styles } from './styles';
 import { theme } from '../../global/styles/theme';
 import { metrics } from '../../global/styles/metrics';
 
-import logoHorizontal from "../../assets/logo-horizontal-bold.png"
+import logoHorizontal from "../../assets/logo-horizontal.png"
 import { Button } from '../../components/Button';
 
 export function HomeScreen({navigation}) {
@@ -26,11 +26,10 @@ export function HomeScreen({navigation}) {
         </View>
         <View style={styles.buttonContent}>
           <Button 
-            text={"analyze"}
+            text={"start"}
             textColor={theme.colors.white}
             OnPress={()=> {
-              console.log("navigate!")
-              navigation.navigate('CameraScreen')
+              navigation.navigate('TipsScreen')
             }}
             extraStyle={{
               backgroundColor: theme.colors.primary,
