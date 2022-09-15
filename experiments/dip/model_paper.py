@@ -23,12 +23,8 @@ from sklearn.preprocessing import OneHotEncoder
 #open cv
 import cv2 as cv
 
-
 from cascid.configs import config, pad_ufes
 from cascid import database
-
-# Local py script
-from model import *
 
 # Run with nohup python3 model.py &
 
@@ -184,9 +180,36 @@ def model_fit():
         pickle.dump(training_history.history, fl)
     training_history = training_history.history
 
+
+def efficient_net():
+    EffNet = keras.applications.efficientnet.EfficientNetB3(
+        include_top=False,
+        weights='imagenet',
+        input_tensor=None,
+        input_shape=IMAGE_SHAPE,
+        pooling='avg',
+        classes=6,
+        classifier_activation='softmax'
+    )
+
+    with open(FEATURES_FILE, 'rb') as file:
+        features = pickle.load(file)
+
+    x_train = features["train"]
+    x_test = features["test"]
+    x_valid = features["valid"]
+    y_train = features["y_train"]
+    y_test = features["y_test"]
+    y_valid = features["y_valid"]
+
+    
+
+
+
+
+
 def main():
-    compute_features()
-    main()
+    return efficient_net()
 
 if __name__ == "__main__":
     main()
