@@ -30,6 +30,8 @@ from cascid import database
 # Local py script
 from model import *
 
+# Run with nohup python3 model.py &
+
 RANDOM_STATE = 42
 TRAIN_SIZE = 0.7
 VALIDATION_SIZE = 0.15
@@ -44,6 +46,8 @@ IMAGE_CACHE = FERNANDO_PATH / 'img_cache.pkl'
 FEATURES_FILE = FERNANDO_PATH / 'features.pkl'
 MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning'
 
+IMDIR = pad_ufes.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
+
 
 def compute_features():
 
@@ -57,7 +61,7 @@ def compute_features():
     # Automatic caching of image read operations (slow)
     def load_image(name: str):
         pil_img = load_img(
-            str(pad_ufes.IMAGES_DIR / name),
+            str(IMDIR / name),
             grayscale=False,
             color_mode='rgb',
             target_size=(IMAGE_SHAPE[0], IMAGE_SHAPE[1]),
