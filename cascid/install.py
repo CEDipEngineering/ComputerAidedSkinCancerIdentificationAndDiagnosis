@@ -36,6 +36,7 @@ def install_data_ufes(FORCE_INSTALL=False):
         zf.extractall(pad_ufes_dir)
 
         # Extract individual image zips
+        img_folders = list(filter( lambda x: not x.endswith(".png"), os.listdir(Path(pad_ufes_dir) / "images"))) # Filter img folder zips
         img_zip_paths = list(map(lambda x: str(Path(pad_ufes_dir) / "images" / x), img_folders)) # Find zips
         for zip in img_zip_paths:
             with zipfile.ZipFile(zip, "r") as Zf:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import pickle
-import os
+import time
 
 #basic
 import pandas as pd
@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 
 #tensorflow and keras
 from tensorflow import keras
+import tensorflow
+from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomBrightness, RandomContrast, RandomCrop, RandomFlip, RandomRotation
 from keras.preprocessing.image import ImageDataGenerator
-from keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomBrightness, RandomContrast, RandomCrop, RandomFlip, RandomRotation
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import Model
 from keras.utils import load_img, img_to_array
@@ -28,31 +29,44 @@ from cascid import database
 
 # Run with nohup python3 model.py &
 
+
+
+"""
+
+Attempt to implement similar solution to paper: https://www.hindawi.com/journals/complexity/2021/5591614/
+
+"""
+
+
+
+
+
 RANDOM_STATE = 42
-TRAIN_SIZE = 0.7
-VALIDATION_SIZE = 0.15
 TEST_SIZE = 0.15
-EPOCHS = 3000
-IMAGE_SHAPE = (128, 128, 3)
+EPOCHS = 200
+IMAGE_SHAPE = (300, 300, 3)
 
 FERNANDO_PATH = config.DATA_DIR / 'experiments' / 'fernando'
 FERNANDO_PATH.mkdir(exist_ok=True, parents=True)
 
 IMAGE_CACHE = FERNANDO_PATH / 'img_cache.pkl'
 FEATURES_FILE = FERNANDO_PATH / 'features.pkl'
-MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning'
+MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning_effnet'
 
 IMDIR = pad_ufes.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
 
 
-def compute_features():
-
+def cache_images():
+    """
+    Cache images to IMAGE_CACHE directory
+    """
     df = database.get_db()
 
+    print("Reading and splitting dataset into train, test and validation")
     MulticlassEncoder = OneHotEncoder(sparse=False) # OHE for y encoding
     Y = MulticlassEncoder.fit_transform(df[["diagnostic"]].to_numpy())
-    x_train, x_test, y_train, y_test = train_test_split(df["img_id"].to_numpy(), Y, test_size=0.2, random_state=RANDOM_STATE)
-    x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=RANDOM_STATE)
+    x_train_paths, x_test_paths, y_train, y_test = train_test_split(df["img_id"].to_numpy(), Y, test_size=0.2, random_state=RANDOM_STATE)
+    x_train_paths, x_valid_paths, y_train, y_valid = train_test_split(x_train_paths, y_train, test_size=0.2, random_state=RANDOM_STATE)
 
     # Automatic caching of image read operations (slow)
     def load_image(name: str):
@@ -68,25 +82,46 @@ def compute_features():
         return img_to_array(pil_img, dtype=np.uint8)
 
     reader = lambda img_path_list : np.array(list(map(load_image, img_path_list)))
+    start = time.perf_counter()
+    print("Beginning read images from disk operations")
     image_dict = {
-        "train": reader(x_train),
-        "test": reader(x_test),
-        "valid": reader(x_valid)
+        "x_train": reader(x_train_paths),
+        "x_test": reader(x_test_paths),
+        "x_valid": reader(x_valid_paths),
+        "y_train": y_train,
+        "y_test": y_test,
+        "y_valid": y_valid
     }
-
+    print("Read operations done, took {:.03f}s, cache file available at {}".format(time.perf_counter() - start, IMAGE_CACHE))
     # Write image cache
     with open(IMAGE_CACHE, 'wb') as file:
         pickle.dump(image_dict, file)
-    print("Read operations done, cache file available at {}".format(IMAGE_CACHE))
 
-    # Return to original variables
-    x_train = image_dict["train"]
-    x_test = image_dict["test"]
-    x_valid = image_dict["valid"]
+def model_fit():
 
-    input_layer = keras.Sequential([
-        Rescaling(1./255), # Rescale from 0 to 255 UINT8 to 0 to 1 float.
-    ])
+    print("Beginning model fit function...")
+    print("Loading cache...")
+    with open(IMAGE_CACHE, 'rb') as file:
+        features = pickle.load(file)
+
+    # slice_index = 10 # set to -1 to get all
+    x_train = features["x_train"]#[:slice_index]
+    x_test = features["x_test"]#[:slice_index]
+    x_valid = features["x_valid"]#[:slice_index]
+    y_train = features["y_train"]#[:slice_index]
+    y_test = features["y_test"]#[:slice_index]
+    y_valid = features["y_valid"]#[:slice_index]
+
+    print("Defining layers...")
+    SHAPE = (x_train.shape[1], x_train.shape[2], x_train.shape[3])
+    feature_extractor = keras.applications.efficientnet.EfficientNetB3(
+        include_top=False,
+        weights='imagenet',
+        input_tensor=None,
+        input_shape= SHAPE,
+        pooling='avg',
+    )
+    feature_extractor.trainable = False
 
     augmentor = keras.Sequential([
         RandomBrightness(factor=(-0.3, 0.3), value_range=(0.0, 1.0), seed=RANDOM_STATE), # Randomly change brightness anywhere from -30% to +30%
@@ -95,121 +130,58 @@ def compute_features():
         RandomRotation(factor=(-0.3, 0.3), fill_mode="nearest", interpolation="bilinear", seed=RANDOM_STATE), # Randomly rotate anywhere from -30% * 2PI to +30% * 2PI, filling gaps by using 'nearest' strategy
     ])
 
-    resnet = keras.applications.ResNet50(
-        weights='imagenet',
-        input_shape=IMAGE_SHAPE,
-        pooling='avg',
-        include_top=False,
-    )
-    resnet.trainable = False  #to make sure it's not being trained
-    # Augmentation only on training
-    feature_extractor_train = keras.Sequential([
-        input_layer,
-        augmentor,
-        resnet
-    ])
-    # Test/Validation only get rescaled
-    feature_extractor_test_valid = keras.Sequential([
-        input_layer,
-        resnet
-    ])
-    features_train = feature_extractor_train(x_train)
-    features_valid = feature_extractor_test_valid(x_valid)
-    features_test = feature_extractor_test_valid(x_test)
-
-    features = {
-        "train": features_train.numpy(),
-        "test": features_test.numpy(),
-        "valid": features_valid.numpy(),
-        "y_train": y_train,
-        "y_test": y_test,
-        "y_valid": y_valid,
-    }
-
-    with open(FEATURES_FILE, 'wb') as file:
-        pickle.dump(features, file)
-
-
-def model_fit():
-    with open(FEATURES_FILE, 'rb') as file:
-        features = pickle.load(file)
-
-    x_train = features["train"]
-    x_test = features["test"]
-    x_valid = features["valid"]
-    y_train = features["y_train"]
-    y_test = features["y_test"]
-    y_valid = features["y_valid"]
-
     model = keras.Sequential([
-        Input(shape = features["train"].shape[1]),
-        Dense(128, activation='relu'),
+        Input(shape = SHAPE),
+        augmentor,
+        feature_extractor,
+        Dense(32, activation='relu'),
         Dropout(0.1),
-        Dense(128),
+        Dense(32),
         Dropout(0.1),
-        Dense(64),
+        Dense(16),
         Dropout(0.1),
         Dense(y_train.shape[1], activation='softmax')
     ])
-
-    model.compile(optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['accuracy'])
 
     early_stopping = EarlyStopping(
         monitor='val_accuracy',
         mode='max',
         verbose=1,
-        patience=100,
+        patience=50,
         restore_best_weights=True
     )
 
+    print("Compiling model...")
+    model.compile(optimizer='adam',
+                loss='categorical_crossentropy',
+                metrics=['accuracy'])
 
+    print("\n", model.summary())    
+
+    print("\nBeginning model fit...")
     training_history = model.fit(
-        features["train"],
+        x_train,
         y_train,
         epochs=EPOCHS,
-        validation_split=0.2,
-        batch_size=512,
-        callbacks=[early_stopping]
+        validation_data=(x_valid, y_valid),
+        batch_size=5,
+        #callbacks=[early_stopping]
     )
 
     model.save(MODEL_PATH)
+    print("Model saved to {}".format(MODEL_PATH))
 
-    with open(MODEL_PATH / 'history.pkl', 'wb') as fl:
+    HISTORY_PATH = MODEL_PATH / 'history.pkl'
+    with open(HISTORY_PATH, 'wb') as fl:
         pickle.dump(training_history.history, fl)
     training_history = training_history.history
-
-
-def efficient_net():
-    EffNet = keras.applications.efficientnet.EfficientNetB3(
-        include_top=False,
-        weights='imagenet',
-        input_tensor=None,
-        input_shape=IMAGE_SHAPE,
-        pooling='avg',
-        classes=6,
-        classifier_activation='softmax'
-    )
-
-    with open(FEATURES_FILE, 'rb') as file:
-        features = pickle.load(file)
-
-    x_train = features["train"]
-    x_test = features["test"]
-    x_valid = features["valid"]
-    y_train = features["y_train"]
-    y_test = features["y_test"]
-    y_valid = features["y_valid"]
-
-    
-
-
-
-
+    print("Training history also saved, to path {}".format(HISTORY_PATH))
 
 def main():
-    return efficient_net()
+    print("\n"*3)
+    print("Beginning script execution...")
+    # cache_images() # Read images and resize, store in pickle cache file
+    model_fit() # Train model on cached images
 
 if __name__ == "__main__":
     main()
