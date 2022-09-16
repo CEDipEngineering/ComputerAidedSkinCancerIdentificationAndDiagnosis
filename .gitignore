@@ -132,3 +132,5 @@ dmypy.json
 # Custom
 data/*
 data/
+experiments/dip/binary_cnn
+experiments/dip/multiclass_cnn
