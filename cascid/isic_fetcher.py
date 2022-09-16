@@ -112,9 +112,15 @@ def save_metadata(image_list: List[LesionImage]):
     # finally:
     df.to_csv(isic.METADATA)
 
-
 if __name__ == "__main__":
-    images = fetch_from_isic(500, ["melanoma", "nevus", '"basal cell carcinoma"'])
+    images = fetch_from_isic(500, [
+        "melanoma",
+        "nevus",
+        '"basal cell carcinoma"',
+        '"seborrheic keratosis"',
+        '"actinic keratosis"',
+        '"squamous cell carcinoma"'
+        ])
     save_metadata(image_list=images)
     exit(0)
 
