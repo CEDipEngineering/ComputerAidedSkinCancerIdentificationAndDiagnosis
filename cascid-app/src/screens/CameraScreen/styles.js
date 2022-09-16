@@ -1,15 +1,25 @@
 import { StyleSheet, Platform } from "react-native";
-import { theme } from "../../global/styles/theme";
-import { metrics } from "../../global/styles/metrics";
+import { Dimensions } from 'react-native';
 
-const iphone = Platform.OS === 'ios'
+import { theme } from "../../global/styles/theme";
+
+const windowWidth = Dimensions.get('window').width;
 
 export const styles = StyleSheet.create({
     container:{
         flex: 1,
-        backgroundColor: theme.colors.black
+        backgroundColor: theme.colors.black,
+        justifyContent: "space-between"
     },
-    content: {
+
+    cameraConfig: {
+        width: "100%",
+        flex:1, 
+        justifyContent: "center",
+        alignItems: "center"
+    }, 
+
+    menu: {
         width: '100%',
         height: '20%',
         flexDirection: 'row',
@@ -34,14 +44,33 @@ export const styles = StyleSheet.create({
         borderRadius: 23,
     },
 
-    externalCircle: {
-        height: 80,
-        width: 80,
+    cameraExternalCircle: {
+        height: 200,
+        width: 200,
         borderWidth: 3,
         borderColor: theme.colors.gray,
-        borderRadius: 40,
+        borderRadius: 100,
         backgroundColor: 'transparent',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        opacity: .8
+    },
+
+    cameraMiddleCircle:{
+        height: 180,
+        width: 180,
+        borderRadius: 90,
+        backgroundColor: theme.colors.white,
+        justifyContent: 'center',
+        alignItems: 'center',
+        opacity: .1
+    },
+
+    cameraCentralCircle:{
+        position: "absolute",
+        height: 10,
+        width: 10,
+        borderRadius: 5,
+        backgroundColor: theme.colors.gray,
     }
 })

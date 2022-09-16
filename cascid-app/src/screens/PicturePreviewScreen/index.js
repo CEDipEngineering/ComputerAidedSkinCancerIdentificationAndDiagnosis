@@ -1,5 +1,5 @@
 import React from "react"
-import { Text, View, SafeAreaView, Image } from 'react-native';
+import {View, SafeAreaView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { Tip } from "../../components/Tip";

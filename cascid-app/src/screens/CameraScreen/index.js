@@ -5,9 +5,10 @@ import { Camera } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 
-//import { goBack, navigate } from "../../services/navigation";
+import { PageHeader } from "../../components/PageHeader"
 import { styles } from "./styles";
 import { theme } from "../../global/styles/theme";
+import { metrics } from "../../global/styles/metrics";
 
 export function CameraScreen({navigation}) {
     const camRef = useRef(null)
@@ -48,22 +49,27 @@ export function CameraScreen({navigation}) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.content}></View>
+            <View style={{marginHorizontal: metrics.margin}}>
+                <PageHeader 
+                   text={"Take picture"}
+                    onCancelPress={() => navigation.navigate("HomeScreen")}
+                    color={theme.colors.white}
+                />
+            </View>
             {
             isFocused && 
             <Camera
-                style={{ 
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center"
-                }}
+                style={styles.cameraConfig}
                 type={cameraType} 
                 flashMode={handleFlashMode(enableFlash)}
                 ref={camRef}>
-                    <View style={styles.externalCircle}></View>
+                    <View style={styles.cameraExternalCircle}>
+                        <View style={styles.cameraMiddleCircle}></View>
+                        <View style={styles.cameraCentralCircle}></View>
+                    </View>
                 </Camera>
             }
-            <View style={styles.content}>
+            <View style={styles.menu}>
                 <MaterialIcons
                     name='flip-camera-android'
                     size={24}
