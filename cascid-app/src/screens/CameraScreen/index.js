@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useIsFocused } from '@react-navigation/native';
 import { View, TouchableOpacity, SafeAreaView, Text} from "react-native";
 import { Camera } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -13,7 +14,8 @@ export function CameraScreen({navigation}) {
     const [hasPermission, setHasPermission] = useState('pending');
     const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
     const [enableFlash, setEnableFlash] = useState(false)
-    const [capturedPhoto, setCapturedPhoto] = useState({ uri: '', widht: null, height: null })
+
+    const isFocused = useIsFocused() //enables camera on the right moment
 
     //functions
     function handleFlashMode(flash) {
@@ -24,7 +26,7 @@ export function CameraScreen({navigation}) {
     async function takePicture(camRef) {
         if (camRef) {
             const data = await camRef.current.takePictureAsync()
-            setCapturedPhoto(data)
+            navigation.navigate("PicturePreviewScreen", {imagePreview: data})
         }
     }
 
@@ -47,6 +49,8 @@ export function CameraScreen({navigation}) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}></View>
+            {
+            isFocused && 
             <Camera
                 style={{ 
                     flex: 1,
@@ -58,6 +62,7 @@ export function CameraScreen({navigation}) {
                 ref={camRef}>
                     <View style={styles.externalCircle}></View>
                 </Camera>
+            }
             <View style={styles.content}>
                 <MaterialIcons
                     name='flip-camera-android'

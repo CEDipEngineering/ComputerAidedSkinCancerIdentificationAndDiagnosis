@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, SafeAreaView, Image } from 'react-native';
+import { View, SafeAreaView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { PageHeader } from "../../components/PageHeader";
@@ -11,7 +11,7 @@ import { styles } from "./styles";
 
 export function TipsScreen({navigation}){
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <PageHeader 
                 text={"Get started"}
                 onCancelPress={() => navigation.navigate("HomeScreen")}
@@ -45,6 +45,6 @@ export function TipsScreen({navigation}){
                     }}
                 />
             </View>
-        </View>
+        </SafeAreaView>
     )
 }
