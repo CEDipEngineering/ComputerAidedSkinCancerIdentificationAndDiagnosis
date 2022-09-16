@@ -133,3 +133,5 @@ dmypy.json
 data/*
 data/
 Untitled.ipynb
+experiments/dip/binary_cnn
+experiments/dip/multiclass_cnn
