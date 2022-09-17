@@ -21,11 +21,7 @@ from cascid import database
 
 # Run with nohup python3 model.py &
 
-"""
-
-Attempt to implement similar solution to paper: https://www.hindawi.com/journals/complexity/2021/5591614/
-
-"""
+"Attempt to implement similar solution to paper: https://www.hindawi.com/journals/complexity/2021/5591614/"
 
 RANDOM_STATE = 42
 EPOCHS = 10
