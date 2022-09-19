@@ -132,7 +132,6 @@ dmypy.json
 # Custom
 data/*
 data/
-
 node_modules/
 .expo/
 dist/
@@ -147,3 +146,9 @@ web-build/
 
 # macOS
 .DS_Store
+model/
+model/*
+/model
+Untitled.ipynb
+experiments/dip/binary_cnn
+experiments/dip/multiclass_cnn
