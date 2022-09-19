@@ -1,18 +1,40 @@
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
-from starlette.status import HTTP_302_FOUND
+from fastapi import FastAPI, Form
+from model import PredictiveModel
+import uuid
+import base64
+from cascid.configs import config
+import cv2
 
 app = FastAPI()
 
-@app.get('/', tags=['root'])
-async def read_root() -> dict:
-    return {"message": "Hello World"}
+db = []
+
+API_DATA = config.DATA_DIR / "api_data"
+API_DATA.mkdir(parents=True, exist_ok=True)
+
+model = PredictiveModel()
+
+@app.post("/upload")
+def upload(filedata: str = Form(...)):
+    image_as_bytes = str.encode(filedata)  # convert string to bytes
+    img_recovered = base64.b64decode(image_as_bytes)  # decode base64string
+    try:
+        fn = uuid.uuid4() + ".jpg"
+        with open(API_DATA / fn, "wb") as f:
+            f.write(img_recovered)
+        db.append(fn)
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    
+    return {"path": fn} 
 
 
-# async def register_post():
-#     # Implementation details ...
-
-#     return RedirectResponse(
-#         '/account', # Target path
-#         status_code=HTTP_302_FOUND # Code to redirect while changing request from post to get
-#     )
+@app.get("/images/{fn}")
+async def read_file(fn):
+    try:
+        image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+        pred = model.predict_proba(image)
+        print(pred)
+    except FileNotFoundError:
+        return {"Error" : "File not found, check your request path"}
+    return str(pred)
