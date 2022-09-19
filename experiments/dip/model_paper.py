@@ -1,49 +1,33 @@
 #!/usr/bin/env python3
 import pickle
 import time
+import sys
 
-#basic
-import pandas as pd
 import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
 
 #tensorflow and keras
 from tensorflow import keras
-import tensorflow
 from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomBrightness, RandomContrast, RandomCrop, RandomFlip, RandomRotation
 from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras import Model
+from keras.callbacks import EarlyStopping
 from keras.utils import load_img, img_to_array
 
 #sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
-#open cv
-import cv2 as cv
-
 from cascid.configs import config, pad_ufes
 from cascid import database
 
 # Run with nohup python3 model.py &
 
-
-
-"""
-
-Attempt to implement similar solution to paper: https://www.hindawi.com/journals/complexity/2021/5591614/
-
-"""
-
-
-
-
+"Attempt to implement similar solution to paper: https://www.hindawi.com/journals/complexity/2021/5591614/"
 
 RANDOM_STATE = 42
-TEST_SIZE = 0.15
-EPOCHS = 200
+EPOCHS = 10
+ES_PATIENCE = 3
+BATCH_SIZE = 32
+TEST_SPLIT = 0.9
 IMAGE_SHAPE = (300, 300, 3)
 
 FERNANDO_PATH = config.DATA_DIR / 'experiments' / 'fernando'
@@ -65,8 +49,7 @@ def cache_images():
     print("Reading and splitting dataset into train, test and validation")
     MulticlassEncoder = OneHotEncoder(sparse=False) # OHE for y encoding
     Y = MulticlassEncoder.fit_transform(df[["diagnostic"]].to_numpy())
-    x_train_paths, x_test_paths, y_train, y_test = train_test_split(df["img_id"].to_numpy(), Y, test_size=0.2, random_state=RANDOM_STATE)
-    x_train_paths, x_valid_paths, y_train, y_valid = train_test_split(x_train_paths, y_train, test_size=0.2, random_state=RANDOM_STATE)
+    x_train_paths, x_test_paths, y_train, y_test = train_test_split(df["img_id"].to_numpy(), Y, test_size=TEST_SPLIT, random_state=RANDOM_STATE)
 
     # Automatic caching of image read operations (slow)
     def load_image(name: str):
@@ -87,10 +70,8 @@ def cache_images():
     image_dict = {
         "x_train": reader(x_train_paths),
         "x_test": reader(x_test_paths),
-        "x_valid": reader(x_valid_paths),
         "y_train": y_train,
-        "y_test": y_test,
-        "y_valid": y_valid
+        "y_test": y_test
     }
     print("Read operations done, took {:.03f}s, cache file available at {}".format(time.perf_counter() - start, IMAGE_CACHE))
     # Write image cache
@@ -104,13 +85,10 @@ def model_fit():
     with open(IMAGE_CACHE, 'rb') as file:
         features = pickle.load(file)
 
-    # slice_index = 10 # set to -1 to get all
-    x_train = features["x_train"]#[:slice_index]
-    x_test = features["x_test"]#[:slice_index]
-    x_valid = features["x_valid"]#[:slice_index]
-    y_train = features["y_train"]#[:slice_index]
-    y_test = features["y_test"]#[:slice_index]
-    y_valid = features["y_valid"]#[:slice_index]
+    x_train = features["x_train"]
+    x_test = features["x_test"]
+    y_train = features["y_train"]
+    y_test = features["y_test"]
 
     print("Defining layers...")
     SHAPE = (x_train.shape[1], x_train.shape[2], x_train.shape[3])
@@ -147,7 +125,7 @@ def model_fit():
         monitor='val_accuracy',
         mode='max',
         verbose=1,
-        patience=50,
+        patience=ES_PATIENCE,
         restore_best_weights=True
     )
 
@@ -163,9 +141,9 @@ def model_fit():
         x_train,
         y_train,
         epochs=EPOCHS,
-        validation_data=(x_valid, y_valid),
-        batch_size=5,
-        #callbacks=[early_stopping]
+        validation_split=0.2,
+        batch_size=BATCH_SIZE,
+        callbacks=[early_stopping]
     )
 
     model.save(MODEL_PATH)
@@ -180,8 +158,17 @@ def model_fit():
 def main():
     print("\n"*3)
     print("Beginning script execution...")
-    # cache_images() # Read images and resize, store in pickle cache file
+    cache_images() # Read images and resize, store in pickle cache file
     model_fit() # Train model on cached images
 
 if __name__ == "__main__":
+    print("Can be used two ways:")
+    print("Usage:\n python3 model_paper.py <EPOCHS> <ES_PATIENCE> <BATCH_SIZE> <TEST_SPLIT>\n python3 model_paper.py")
+    print("Second option will run with default args")
+    if len(sys.argv) > 1:
+        EPOCHS = sys.argv[1]
+        ES_PATIENCE = sys.argv[2]
+        BATCH_SIZE = sys.argv[3]
+        TEST_SPLIT = sys.argv[4]
+
     main()
