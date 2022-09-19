@@ -1,6 +1,8 @@
 import React from "react"
 import {View, SafeAreaView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import { showMessage } from "react-native-flash-message";
 
 import { Tip } from "../../components/Tip";
 import { PageHeader } from "../../components/PageHeader"
@@ -9,9 +11,31 @@ import { styles } from "./styles";
 import { theme } from "../../global/styles/theme";
 import { metrics } from "../../global/styles/metrics";
 
+import { uploadImage } from "../../services/requests/picturePreviewScreen";
+
 export function PicturePreviewScreen({navigation, route}){
 
     const {imagePreview} = route.params
+
+    // functions
+    async function readImageAsBase64(imagePath) {
+        return await FileSystem.readAsStringAsync(
+            imagePath, {encoding: FileSystem.EncodingType.Base64})
+    }
+
+    async function sendImage(imagePath){
+        try {
+            const imageToBase64 = await readImageAsBase64(imagePath)
+            navigation.navigate("ResultsScreen", 
+                {imageUri: imagePreview.uri, prediction: "qualquer coisa"})
+            //const apiResponse = await uploadImage(imageToBase64)
+        }
+        catch (error){
+            console.log(error)
+            showMessage({ message: "something went wrong", icon: 'danger', type: 'danger'});
+        }        
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <PageHeader 
@@ -41,7 +65,7 @@ export function PicturePreviewScreen({navigation, route}){
                 <Button 
                     text={"analyze"}
                     textColor={theme.colors.white}
-                    OnPress={()=> {console.log("analyze image")}}
+                    OnPress={()=> {sendImage(imagePreview.uri)}}
                     extraStyle={{
                     backgroundColor: theme.colors.primary,
                     fontSize: metrics.textSize,
