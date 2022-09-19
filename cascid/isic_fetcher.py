@@ -99,7 +99,7 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
 
 def download_image(image_url: str, isic_id: str) -> None:
     img_bytes = requests.get(image_url)
-    img_path = isic.IMAGE_DIR / (isic_id+".jpg")
+    img_path = isic.IMAGES_DIR / (isic_id+".jpg")
     with open(img_path , "wb") as imfile:
         imfile.write(img_bytes.content)
 
@@ -113,7 +113,7 @@ def save_metadata(image_list: List[LesionImage]):
     df.to_csv(isic.METADATA)
 
 if __name__ == "__main__":
-    images = fetch_from_isic(500, [
+    images = fetch_from_isic(800, [
         "melanoma",
         "nevus",
         '"basal cell carcinoma"',
