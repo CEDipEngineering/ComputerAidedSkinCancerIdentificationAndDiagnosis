@@ -7,12 +7,10 @@ import urllib
 import pandas as pd
 
 class LesionImage():
-    def __init__(self, isic_id: str, sex: str, diagnosis: str, age_approx: int, image_url: str, anatom_site_general: str = None, diagnosis_confirm_type: str = None):
+    def __init__(self, isic_id: str, sex: str, diagnostic: str, age_approx: int, image_url: str):
         self.isic_id = isic_id
         self.sex = sex
-        self.diagnosis = diagnosis
-        # self.anatom_site_general = anatom_site_general
-        # self.diagnosis_confirm_type = diagnosis_confirm_type
+        self.diagnostic = diagnostic
         self.age_approx = age_approx
         self.image_url = image_url
 
@@ -20,7 +18,7 @@ class LesionImage():
         return self.__dict__
 
     def __str__(self) -> str:
-        return "Image {}: {};\n".format(self.isic_id, self.diagnosis)
+        return "Image {}: {};\n".format(self.isic_id, self.diagnostic)
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -44,14 +42,14 @@ def _fetch(url, params=None):
             age_approx=int(res["metadata"]["clinical"]["age_approx"]),
             image_url=res["files"]["full"]["url"]
         except KeyError as e:
-            print("Image {} is missing error {}".format(isic_id[0], e))
+            # print("Image {} is missing error {}".format(isic_id[0], e))
             continue
         # Extract useful fields from response JSON
         output["lesion_image_list"].append(
             LesionImage(
                 isic_id=isic_id[0],
                 sex=sex[0],
-                diagnosis=diag[0],
+                diagnostic=diag[0],
                 # anatom_site_general=anatom_site_general[0],
                 # diagnosis_confirm_type=diagnosis_confirm_type[0],
                 age_approx=age_approx[0],
@@ -92,7 +90,7 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
                 out = _fetch(next_urls[diagnosis])
                 next_urls[diagnosis] = out["next"]
                 lesion_image_list += out["lesion_image_list"]
-            print("{:04d} images left...\r".format(n_samples), end="\r")        
+            print("{:04d} images left...\r".format(n_samples), end="")        
         print(" "*100)
         print("Done!")
     return lesion_image_list
@@ -105,11 +103,7 @@ def download_image(image_url: str, isic_id: str) -> None:
 
 def save_metadata(image_list: List[LesionImage]):
     df = pd.DataFrame(list(map(lambda x: x.to_dict(), image_list))) # Build dataframe from list of dicts
-    # try:
-    #     df.drop("Unnamed: 0", axis=1)
-    # except KeyError as e:
-        
-    # finally:
+    df["img_id"] = df["isic_id"].apply(lambda id: id + ".jpg") # Make column for image name
     df.to_csv(isic.METADATA)
 
 if __name__ == "__main__":
