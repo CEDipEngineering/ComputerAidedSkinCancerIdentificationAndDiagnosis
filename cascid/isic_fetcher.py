@@ -86,7 +86,9 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
         while (n_samples//100) > 0:
             n_samples -= 100
             # For each requested diagnosis, collect 100 more
-            for diagnosis in diagnosis_list:        
+            for diagnosis in diagnosis_list:
+                if next_urls[diagnosis] is None:
+                    continue  
                 out = _fetch(next_urls[diagnosis])
                 next_urls[diagnosis] = out["next"]
                 lesion_image_list += out["lesion_image_list"]
@@ -104,7 +106,15 @@ def download_image(image_url: str, isic_id: str) -> None:
 def save_metadata(image_list: List[LesionImage]):
     df = pd.DataFrame(list(map(lambda x: x.to_dict(), image_list))) # Build dataframe from list of dicts
     df["img_id"] = df["isic_id"].apply(lambda id: id + ".jpg") # Make column for image name
-    df.to_csv(isic.METADATA)
+    try:
+        old_df = pd.read_csv(isic.METADATA, index_col=0)
+        df_merge = pd.concat([old_df,df]).drop_duplicates().reset_index(drop=True)
+        df_merge.to_csv(isic.METADATA)
+    except FileNotFoundError:
+        df.to_csv(isic.METADATA)
+        return
+    
+
 
 if __name__ == "__main__":
     images = fetch_from_isic(500, [
