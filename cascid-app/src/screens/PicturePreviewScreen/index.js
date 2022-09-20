@@ -11,7 +11,7 @@ import { styles } from "./styles";
 import { theme } from "../../global/styles/theme";
 import { metrics } from "../../global/styles/metrics";
 
-import { uploadImage } from "../../services/requests/picturePreviewScreen";
+import { uploadImage, predictImage } from "../../services/requests/picturePreviewScreen";
 
 export function PicturePreviewScreen({navigation, route}){
 
@@ -26,12 +26,15 @@ export function PicturePreviewScreen({navigation, route}){
     async function sendImage(imagePath){
         try {
             const imageToBase64 = await readImageAsBase64(imagePath)
+            const uploadImageResponse = await uploadImage(imageToBase64)
+            const predictImageResponse = await predictImage(uploadImageResponse.data.path)
+            console.log(predictImageResponse)
             navigation.navigate("ResultsScreen", 
-                {imageUri: imagePreview.uri, prediction: "qualquer coisa"})
-            //const apiResponse = await uploadImage(imageToBase64)
+                {imageUri: imagePreview.uri, prediction: predictImageResponse.data})
+            
         }
         catch (error){
-            console.log(error)
+            console.log(error.response)
             showMessage({ message: "something went wrong", icon: 'danger', type: 'danger'});
         }        
     }
