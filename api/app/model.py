@@ -1,8 +1,10 @@
 from cascid.configs import config, pad_ufes
 from tensorflow import keras
 from keras.models import load_model
+from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import cv2
+import pickle
 
 FERNANDO_PATH = config.DATA_DIR / 'experiments' / 'fernando'
 FERNANDO_PATH.mkdir(exist_ok=True, parents=True)
@@ -13,6 +15,14 @@ class PredictiveModel():
 
     def __init__(self) -> None:
         self.model = load_model(MODEL_PATH) # Sequential classifier
+        self.ohe = self.load_ohe()
+        
+    def load_ohe(self):
+        with open(MODEL_PATH / "one_hot_categories.pkl", "rb") as fl:
+            cat = pickle.load(fl)
+        ohe = OneHotEncoder(sparse=False, categories=cat, handle_unknown="ignore")
+        ohe.fit(np.array(cat[0][0]).reshape(-1, 1))
+        return ohe
 
     def preprocess(self, image : np.ndarray) -> np.ndarray:
         """
@@ -34,13 +44,9 @@ class PredictiveModel():
         return self.model.predict(image_resized)
 
     def predict(self, image : np.ndarray) -> str:
-        """
-        TODO: 
-        Receive raw image, as read from file or decoded from api request
-        Return predicted class
-        Should call self.preprocess on image before running model.predict
-        """
-        pass
+        pred_proba = self.predict_proba(image)
+        print(pred_proba.shape)
+        return self.ohe.inverse_transform(pred_proba)
 
 
     
