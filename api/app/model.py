@@ -1,3 +1,4 @@
+from typing import Dict
 from cascid.configs import config, pad_ufes
 from tensorflow import keras
 from keras.models import load_model
@@ -5,6 +6,7 @@ from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import cv2
 import pickle
+from scipy.stats import entropy
 
 FERNANDO_PATH = config.DATA_DIR / 'experiments' / 'fernando'
 FERNANDO_PATH.mkdir(exist_ok=True, parents=True)
@@ -25,29 +27,30 @@ class PredictiveModel():
         return ohe
 
     def preprocess(self, image : np.ndarray) -> np.ndarray:
-        """
-        TODO: 
-        Receive image array, process it and return processed image, ready for model prediction.
-        """
         image = cv2.resize(image, (IMAGE_SHAPE[0], IMAGE_SHAPE[1]))
         return np.expand_dims(image, 0) # Placeholder for processing, just return same image
 
-    def predict_proba(self, image : np.ndarray) -> np.ndarray:
-        """
-        TODO: 
-        Receive raw image, as read from file or decoded from api request
-        Return predicted class probabilities
-        Should call self.preprocess on image before running model.predict
-        """
+    def _predict_proba(self, image : np.ndarray) -> np.ndarray:
+        return self.model.predict(image)
+
+    def _predict(self, image : np.ndarray) -> str:
+        return self.ohe.inverse_transform(self._predict_proba(image))
+
+    def _certainty(self, pred: np.ndarray):
+        return entropy(pred)
+    
+    def produce_report(self, image: np.ndarray) -> Dict:
         image_resized = self.preprocess(image)
-        # print(f"{image_resized.shape=}")
-        return self.model.predict(image_resized)
-
-    def predict(self, image : np.ndarray) -> str:
-        pred_proba = self.predict_proba(image)
-        print(pred_proba.shape)
-        return self.ohe.inverse_transform(pred_proba)
-
+        pred_proba = self._predict_proba(image_resized)
+        pred_class = self.ohe.inverse_transform(pred_proba)[0][0]
+        pred_entropy = entropy(pred_proba[0], base=2) # Binary entropy
+        out = {
+            "Diagnosis" : pred_class,
+            "Entropy" : pred_entropy,
+            "Raw Prediction": ";".join(map(lambda x: f"{x:.02f}", pred_proba[0]))
+        }
+        print(out)
+        return out
 
     
 if __name__ == "__main__":
@@ -55,6 +58,6 @@ if __name__ == "__main__":
     print(pm.model.summary())
     image = cv2.cvtColor(cv2.imread(str(pad_ufes.IMAGES_DIR / "PAT_1842_3615_850.png")), cv2.COLOR_BGR2RGB)
     # print(f"{image.shape=}")
-    print(pm.predict_proba(image))
+    print(pm.produce_report(image))
 
     

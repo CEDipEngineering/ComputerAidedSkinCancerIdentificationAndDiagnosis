@@ -34,8 +34,7 @@ def upload(imagedata: str = Form(...)):
 async def read_file(fn):
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        pred = model.predict(image)
-        print(pred)
+        report = model.produce_report(image)
+        return {"report" : report}
     except Exception:
         return {"Error" : "File not found, check your request path"}
-    return {"prediction": str(pred[0][0])}
