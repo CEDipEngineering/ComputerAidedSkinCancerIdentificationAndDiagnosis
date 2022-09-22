@@ -36,6 +36,7 @@ FERNANDO_PATH.mkdir(exist_ok=True, parents=True)
 IMAGE_CACHE = FERNANDO_PATH / 'img_cache.pkl'
 FEATURES_FILE = FERNANDO_PATH / 'features.pkl'
 MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning_effnet'
+ONE_HOT_CATEGORIES_PATH = MODEL_PATH / "one_hot_categories.pkl"
 
 IMDIR = pad_ufes.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
 
@@ -71,7 +72,8 @@ def cache_images():
         "x_train": reader(x_train_paths),
         "x_test": reader(x_test_paths),
         "y_train": y_train,
-        "y_test": y_test
+        "y_test": y_test,
+        "one_hot_categories": MulticlassEncoder.categories_
     }
     print("Read operations done, took {:.03f}s, cache file available at {}".format(time.perf_counter() - start, IMAGE_CACHE))
     # Write image cache
@@ -89,6 +91,7 @@ def model_fit():
     x_test = features["x_test"]
     y_train = features["y_train"]
     y_test = features["y_test"]
+    one_hot_categories = features["one_hot_categories"]
 
     print("Defining layers...")
     SHAPE = (x_train.shape[1], x_train.shape[2], x_train.shape[3])
@@ -152,8 +155,11 @@ def model_fit():
     HISTORY_PATH = MODEL_PATH / 'history.pkl'
     with open(HISTORY_PATH, 'wb') as fl:
         pickle.dump(training_history.history, fl)
+    with open(ONE_HOT_CATEGORIES_PATH, 'wb') as fl:
+        pickle.dump(one_hot_categories, fl)
     training_history = training_history.history
-    print("Training history also saved, to path {}".format(HISTORY_PATH))
+    print("Training history saved to path {}".format(HISTORY_PATH))
+    print("One Hot Encoder categories saved to path {}".format(ONE_HOT_CATEGORIES_PATH))
 
 def main():
     print("\n"*3)

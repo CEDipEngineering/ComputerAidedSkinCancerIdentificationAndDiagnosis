@@ -41,8 +41,8 @@ def upload(uploadItem: UploadItem):
 async def read_file(fn):
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        pred = model.predict_proba(image)
-        print(pred)
+        report = model.produce_report(image)
+        return {"report" : report}
     except Exception:
         raise HTTPException(status_code=404, detail="File not found, check your request path")
     return {"prediction": str(pred)}
