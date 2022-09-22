@@ -7,10 +7,10 @@ import numpy as np
 
 #tensorflow and keras
 from tensorflow import keras
-from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomBrightness, RandomContrast, RandomCrop, RandomFlip, RandomRotation
-from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import EarlyStopping
-from keras.utils import load_img, img_to_array
+from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomContrast, RandomCrop, RandomFlip, RandomRotation
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.utils import load_img, img_to_array
 
 #sklearn
 from sklearn.model_selection import train_test_split
@@ -60,7 +60,6 @@ def cache_images():
             color_mode='rgb',
             target_size=(IMAGE_SHAPE[0], IMAGE_SHAPE[1]),
             interpolation='nearest',
-            keep_aspect_ratio=False
         )
 
         return img_to_array(pil_img, dtype=np.uint8)
@@ -105,7 +104,6 @@ def model_fit():
     feature_extractor.trainable = False
 
     augmentor = keras.Sequential([
-        RandomBrightness(factor=(-0.3, 0.3), value_range=(0.0, 1.0), seed=RANDOM_STATE), # Randomly change brightness anywhere from -30% to +30%
         RandomContrast(factor=0.5, seed=RANDOM_STATE), # Randomly change contrast anywhere from -30% to +30%
         RandomFlip(mode="horizontal_and_vertical", seed=RANDOM_STATE), # Randomly flip images either horizontally, vertically or both
         RandomRotation(factor=(-0.3, 0.3), fill_mode="nearest", interpolation="bilinear", seed=RANDOM_STATE), # Randomly rotate anywhere from -30% * 2PI to +30% * 2PI, filling gaps by using 'nearest' strategy
@@ -172,9 +170,9 @@ if __name__ == "__main__":
     print("Usage:\n python3 model_paper.py <EPOCHS> <ES_PATIENCE> <BATCH_SIZE> <TEST_SPLIT>\n python3 model_paper.py")
     print("Second option will run with default args")
     if len(sys.argv) > 1:
-        EPOCHS = sys.argv[1]
-        ES_PATIENCE = sys.argv[2]
-        BATCH_SIZE = sys.argv[3]
-        TEST_SPLIT = sys.argv[4]
+        EPOCHS = int(sys.argv[1])
+        ES_PATIENCE = int(sys.argv[2])
+        BATCH_SIZE = int(sys.argv[3])
+        TEST_SPLIT = float(sys.argv[4])
 
     main()
