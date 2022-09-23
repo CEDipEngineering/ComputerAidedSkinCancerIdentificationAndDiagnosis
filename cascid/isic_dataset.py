@@ -30,7 +30,7 @@ def update_all_files(df: pd.DataFrame) -> None:
     i = 0
     for id, url in zip(df["isic_id"], df["image_url"]):
         print("Count: {}/{} ({:.02f}%)\r".format(i, count, (i/count)*100), end="")
-        if not os.path.exists(isic.IMAGE_DIR / (id + ".jpg")):
+        if not os.path.exists(isic.IMAGES_DIR / (id + ".jpg")):
             isic_fetcher.download_image(
                 image_url=url,
                 isic_id=id
