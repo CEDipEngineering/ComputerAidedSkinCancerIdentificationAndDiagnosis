@@ -9,8 +9,8 @@ const windowHeight = Dimensions.get('window').height;
 export const styles = StyleSheet.create({
     container: {
         flex:1,
-        marginHorizontal: metrics.margin,
-        marginBottom: metrics.margin,
+        padding: metrics.margin,
+        backgroundColor: theme.colors.background
     },
     content: {
         alignItems: "center",
@@ -26,6 +26,7 @@ export const styles = StyleSheet.create({
     button_content: {
         width: "100%",
         position: "absolute",
+        left: metrics.margin,
         bottom: metrics.margin
     }
 

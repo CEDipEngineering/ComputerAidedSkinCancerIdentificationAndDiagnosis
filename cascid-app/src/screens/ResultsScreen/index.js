@@ -35,12 +35,12 @@ export function ResultsScreen({navigation, route}){
                     <Tip 
                         Icon={() => <Ionicons name="newspaper-outline" size={30} color={theme.colors.primary} />}
                         title={"Diagnostic"}
-                        text={JSON.stringify(route.params.prediction)}
+                        text={route.params.prediction.Diagnosis}
                     />
                     <Tip 
                         Icon={() => <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={30} color={theme.colors.primary} />}
                         title={"Conffidence"}
-                        text={"82%"}
+                        text={"21%"}
                     />
                 </View>
             </View>

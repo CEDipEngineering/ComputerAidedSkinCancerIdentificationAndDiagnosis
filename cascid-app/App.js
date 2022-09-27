@@ -5,6 +5,7 @@ import { showMessage } from "react-native-flash-message";
 
 
 import { api } from "./src/services/api";
+import { theme } from "./src/global/styles/theme";
 
 import Router  from "./src/routes";
 
@@ -26,14 +27,16 @@ export default function App() {
   }, [])
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{
+      flex: 1
+      }}>
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
         translucent
       >
       </StatusBar>
-      <Router/>
+      <Router style={{backgroundColor: theme.colors.white}}/>
       <FlashMessage position="top" style={{ marginTop: 40 }} />
     </View>
   );
