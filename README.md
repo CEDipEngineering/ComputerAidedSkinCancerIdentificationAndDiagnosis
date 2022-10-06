@@ -39,6 +39,9 @@ Database URL: https://data.mendeley.com/datasets/zr7vgbcyr2/1
 
     ### Imagens
 
+    - Sift/Surf Feature Extraction para entrada em modelo de classificação
+    - Modelo de previsão da cor de cabelo
+    - Extrator de cabelo multifuncional
     - Incorporar outros pré-processamentos no pipeline de treino/teste dos modelos (Gabi)
     - Salvar remoção de cabelo em dataset separado (Dip, Gabi)
     - Restruturar CNN (BatchNormalization, Conv2D repetido) (Dip)
