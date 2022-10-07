@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from pathlib import Path
+from cascid.configs import pad_ufes
 
-DATA_DIR = Path(__file__).parents[1]/'data'
 
-IMAGE_DIR = DATA_DIR / "images"
+DATA_DIR = pad_ufes.METADATA
+
+IMAGE_DIR = pad_ufes.IMAGES_DIR
 
 def plot_age_distribution(df: pd.DataFrame) -> plt.figure:
     '''
@@ -65,8 +67,31 @@ def show_sample_pictures(df: pd.DataFrame, n_samples: int = 9 , random_seed: int
         axList[i].set_title("Patient:{0} | Diagnosis:{1}".format(patients[i], diganosis[i]))
     # fig.show()
     return fig
+    
+def apply_processing_show_sample_pictures(df: pd.DataFrame, func, n_samples=9):
+    '''
+    Function to process <n_samples> images from the dataframe with a specific
+    function and show the results.
+    Arguments:
+        - df: dataframe containing image information
+        - func: image preprocessing function
+        - n_samples: number of images to process/show
 
+    '''
+    microdf = df.sample(n_samples, random_state=42).reset_index()
+    imgs = microdf['img_id'].to_list()
+    diganosis = microdf['diagnostic'].to_list()
+    patients = microdf['patient_id'].to_list()
+    results = []
+    for i in range(n_samples):
+        filename = str(pad_ufes.IMAGES_DIR / imgs[i])
+        img = cv2.imread(filename)[:,:,::-1]
+        processed = func(img)
+        results.append(processed)
+    return results
+        
 def show_histograms_by_picture(df: pd.DataFrame, n_samples: int = 3, random_seed: int = None) -> plt.figure:
+
     '''
     Function to show <n_samples> images from dataframe beside their color histogram.
     Dataframe must have the columns 'img_id', 'diagnostic', 'patient_id'
@@ -102,6 +127,51 @@ def show_histograms_by_picture(df: pd.DataFrame, n_samples: int = 3, random_seed
         axList[2*i+1].plot(hist3, label='blue', color='blue')
         axList[2*i+1].legend()
     return fig
+
+def image_grid(images, cols = 4):
+    '''
+    Function to plot multiple images from list
+    Arguments:
+        - images: list of images to be shown
+        - cols: distribution parameter
+
+    Example:
+    image_grid(image_list, 2)
+    '''
+    n_images = len(images)
+    fig = plt.figure()
+    for n, (image) in enumerate(images):
+        a = fig.add_subplot(int(cols), int(np.ceil(n_images/float(cols))), n + 1)
+        if image.ndim == 2:
+            plt.gray()
+        plt.imshow(image)
+    fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
+    plt.show()
+
+
+def save_preprocessed_imgs(img_path, func, dest_dir):
+    '''
+    Function to save preprocessed images
+    Arguments:
+        - img_path: original image path
+        - func: preprocessing function
+        - dest_dir: directory in which images will be saved
+
+    Example:
+    # Preprocess all dataset images, removing hairs
+    save_preprocessed_imgs(df, image_preprocessing.remove_hairs, DEST_DIR)
+    '''
+    try:
+        # If preprocessed image already exists, do nothing
+            img_name = Path(img_path).name
+            img = cv2.imread(dest_dir+img_name)[:,:,::-1]
+            print("already processed: "+dest_dir+img_name)
+    except:
+        # If preprocessed image does not exist, create it
+            img = cv2.imread(img_path)[:,:,::-1]
+            processed = func(img)
+            cv2.imwrite(dest_dir, processed[:,:,::-1])
+            print("saving image: "+dest_dir)
 
 def apply_transform(df: pd.DataFrame, n_samples=3, f: Callable[[np.ndarray,], np.ndarray] = lambda x: x, random_seed: int = None) -> plt.figure:
     '''
