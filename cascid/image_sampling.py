@@ -1,3 +1,4 @@
+from typing import Callable
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +37,7 @@ def plot_age_distribution(df: pd.DataFrame) -> plt.figure:
     # fig.show()
     return fig
 
-def show_sample_pictures(df: pd.DataFrame, n_samples=9) -> plt.figure:
+def show_sample_pictures(df: pd.DataFrame, n_samples: int = 9 , random_seed: int = None) -> plt.figure:
     '''
     Function to show <n_samples> images from the dataframe.
     Dataframe must have the columns 'img_id', 'diagnostic', 'patient_id'
@@ -51,7 +52,7 @@ def show_sample_pictures(df: pd.DataFrame, n_samples=9) -> plt.figure:
     # Show 3 pictures of people with Melanoma
     show_sample_pictures(df[ (df['diagnostic'] == "MEL")], n_samples=3)
     '''
-    microdf = df.sample(n_samples).reset_index()
+    microdf = df.sample(n_samples, random_state=random_seed).reset_index()
     imgs = microdf['img_id'].to_list()
     diganosis = microdf['diagnostic'].to_list()
     patients = microdf['patient_id'].to_list()
@@ -59,16 +60,14 @@ def show_sample_pictures(df: pd.DataFrame, n_samples=9) -> plt.figure:
     axList = []
     for i in range(n_samples):
         axList.append(fig.add_subplot((2+n_samples)//3,3,i+1))
-        filename = IMAGE_DIR.stem + "/" + imgs[i]
-        print(filename)
+        filename = str(IMAGE_DIR) + "/" + imgs[i]
+        # print(filename)
         img = cv2.imread(filename)[:,:,::-1]
         axList[i].imshow(img)
         axList[i].set_title("Patient:{0} | Diagnosis:{1}".format(patients[i], diganosis[i]))
     # fig.show()
     return fig
-
-
-
+    
 def apply_processing_show_sample_pictures(df: pd.DataFrame, func, n_samples=9):
     '''
     Function to process <n_samples> images from the dataframe with a specific
@@ -91,13 +90,12 @@ def apply_processing_show_sample_pictures(df: pd.DataFrame, func, n_samples=9):
         results.append(processed)
     return results
         
+def show_histograms_by_picture(df: pd.DataFrame, n_samples: int = 3, random_seed: int = None) -> plt.figure:
 
-
-def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
     '''
     Function to show <n_samples> images from dataframe beside their color histogram.
     Dataframe must have the columns 'img_id', 'diagnostic', 'patient_id'
-    'img_id' must be name of picture file inside 'data/iamges/' folder
+    'img_id' must be name of picture file inside 'data/images/' folder
     Returns a pyplot Figure with the graphed images and histograms side by side
 
     Examples:
@@ -108,7 +106,7 @@ def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
     # Show 3 pictures of people with Melanoma, and the color histogram of said pictures
     show_histograms_by_picture(df[ (df['diagnostic'] == "MEL")], n_samples=3)
     '''
-    microdf = df.sample(n_samples).reset_index()
+    microdf = df.sample(n_samples, random_state=random_seed).reset_index()
     imgs = microdf['img_id'].to_list()
     diganosis = microdf['diagnostic'].to_list()
     patients = microdf['patient_id'].to_list()
@@ -117,7 +115,7 @@ def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
     for i in range(n_samples):
         axList[2*i] = fig.add_subplot(n_samples,2,2*i+1)
         axList[2*i+1] = fig.add_subplot(n_samples,2,2*i+2)
-        filename = IMAGE_DIR.stem + "/" + imgs[i]
+        filename = str(IMAGE_DIR) + "/" + imgs[i]
         img = cv2.imread(filename)[:,:,::-1]
         axList[2*i].imshow(img)
         axList[2*i].set_title("Patient:{0} | Diagnosis:{1}".format(patients[i], diganosis[i]))
@@ -129,8 +127,6 @@ def show_histograms_by_picture(df: pd.DataFrame, n_samples=3) -> plt.figure:
         axList[2*i+1].plot(hist3, label='blue', color='blue')
         axList[2*i+1].legend()
     return fig
-
-
 
 def image_grid(images, cols = 4):
     '''
@@ -177,3 +173,41 @@ def save_preprocessed_imgs(img_path, func, dest_dir):
             cv2.imwrite(dest_dir, processed[:,:,::-1])
             print("saving image: "+dest_dir)
 
+def apply_transform(df: pd.DataFrame, n_samples=3, f: Callable[[np.ndarray,], np.ndarray] = lambda x: x, random_seed: int = None) -> plt.figure:
+    '''
+    Function to transform <n_samples> images from dataframe. Display original image beside transformed result.
+    Function f must receive and return a single image, which is a numpy ndarray, as read by opencv.
+    Dataframe must have the columns 'img_id', 'diagnostic', 'patient_id'
+    'img_id' must be name of picture file inside 'data/images/' folder
+    Returns a pyplot Figure with the graphed images and histograms side by side
+
+    Examples:
+
+    # Apply histogram equalization to red channel and show result
+    def clahe_transform(img: np.ndarray) -> np.ndarray:
+        img_gray = img[:,:,0] # Red channel only
+        img_blur = cv2.GaussianBlur(img_gray, (15,15), 0, 0) # Blur
+        clahe = cv2.createCLAHE(clipLimit = 1.0, tileGridSize=(13,13)) 
+        clahe_img = clahe.apply(img_blur) # Apply contrast enchance
+        final_img = clahe_img
+        return cv2.cvtColor(final_img, cv2.COLOR_GRAY2RGB) # return in RGB for matplotlib to show
+
+    apply_transform(df, n_samples=9, f=clahe_transform);
+    '''
+    microdf = df.sample(n_samples, random_state=random_seed).reset_index()
+    imgs = microdf['img_id'].to_list()
+    diganosis = microdf['diagnostic'].to_list()
+    patients = microdf['patient_id'].to_list()
+    fig = plt.figure(figsize=(12,6*n_samples))
+    axList = [0]*n_samples*2
+    for i in range(n_samples):
+        axList[2*i] = fig.add_subplot(n_samples,2,2*i+1)
+        axList[2*i+1] = fig.add_subplot(n_samples,2,2*i+2)
+        filename = str(IMAGE_DIR) + "/" + imgs[i]
+        img = cv2.imread(filename)
+        img_transformed = f(img)
+        img = img[:,:,::-1]
+        axList[2*i].imshow(img)
+        axList[2*i].set_title("Patient:{0} | Diagnosis:{1}".format(patients[i], diganosis[i]))
+        axList[2*i+1].imshow(img_transformed)
+    return fig
