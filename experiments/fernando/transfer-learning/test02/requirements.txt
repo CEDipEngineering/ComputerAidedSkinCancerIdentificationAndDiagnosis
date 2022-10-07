@@ -1,9 +1,0 @@
-pandas
-matplotlib
-numpy
-opencv-contrib-python
-plotly
-fast-ml
-tensorflow
-seaborn
-tqdm
