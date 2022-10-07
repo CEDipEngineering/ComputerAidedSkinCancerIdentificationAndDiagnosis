@@ -8,7 +8,7 @@ import numpy as np
 
 #tensorflow and keras
 from tensorflow import keras
-from tensorflow.keras.layers import Input, Dense, Conv2D, GlobalAveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomContrast, RandomCrop, RandomFlip, RandomRotation, BatchNormalization
+from tensorflow.keras.layers import Input, Dense, Conv2D, AveragePooling2D, Flatten, MaxPooling2D, Dropout, Resizing, Rescaling, RandomContrast, RandomCrop, RandomFlip, RandomRotation, BatchNormalization
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import Sequential
@@ -62,21 +62,26 @@ def model_run(x, y):
             RandomContrast(factor=0.3, seed=RANDOM_STATE), # Randomly change contrast anywhere from -30% to +30%
             RandomFlip(mode="horizontal_and_vertical", seed=RANDOM_STATE), # Randomly flip images either horizontally, vertically or both
             RandomRotation(factor=(-0.3, 0.3), fill_mode="nearest", interpolation="bilinear", seed=RANDOM_STATE), # Randomly rotate anywhere from -30% * 2PI to +30% * 2PI, filling gaps by using 'nearest' strategy    
+            Rescaling(1./255),
             Conv2D(64, kernel_size=(7, 7), activation='relu', name="TopConv1"),
             Conv2D(64, kernel_size=(7, 7), activation='relu', name="TopConv2"),
-            BatchNormalization(),
-            MaxPooling2D(pool_size=(2, 2), name="TopBatchNorm"),
+            Conv2D(64, kernel_size=(7, 7), activation='relu', name="TopConv3"),
+            BatchNormalization(name="TopBatchNorm"),
+            Dropout(0.2),
+            MaxPooling2D(pool_size=(2, 2)),
             Conv2D(32, kernel_size=(5, 5), activation='relu', name="CenterConv1"),
             Conv2D(32, kernel_size=(5, 5), activation='relu', name="CenterConv2"),
-            BatchNormalization(),
-            MaxPooling2D(pool_size=(2, 2), name="CenterBatchNorm"),
+            BatchNormalization(name="CenterBatchNorm"),
+            MaxPooling2D(pool_size=(2, 2)),
             Conv2D(16, kernel_size=(3, 3), activation='relu', name="BottomConv1"),
             Conv2D(16, kernel_size=(3, 3), activation='relu', name="BottomConv2"),
-            BatchNormalization(),
-            MaxPooling2D(pool_size=(2, 2), name="BottomBatchNorm"),
+            BatchNormalization(name="BottomBatchNorm"),
+            AveragePooling2D(pool_size=(3, 3)),
             Flatten(),
             Dense(128, activation='relu'),
+            Dropout(0.2),
             Dense(64, activation='relu'),
+            Dropout(0.2),
             Dense(32),
             Dropout(0.2),
             Dense(32),
