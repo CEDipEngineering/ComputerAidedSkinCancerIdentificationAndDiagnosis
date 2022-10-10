@@ -1,6 +1,5 @@
 from multiprocessing.pool import ThreadPool
-from turtle import update
-from typing import List, Callable
+from typing import Callable
 import numpy as np
 from tqdm import tqdm
 
