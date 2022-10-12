@@ -1,20 +1,26 @@
+
+# Native imports
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
-from typing import Callable, List
-import numpy as np
-from tqdm import tqdm
-import cv2
 from pathlib import Path
+import time
+from multiprocessing import cpu_count
+from typing import Callable, List
+
+# Package imports
+import numpy as np
+import cv2
+# from tqdm import tqdm
+
+# Cascid imports
 from cascid.datasets.pad_ufes import database
 from cascid.configs import pad_ufes_cnf
-import time
 from cascid.image.image_preprocessing import adaptive_hair_removal
 
-def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = 6) -> List:
+def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = cpu_count()//2) -> List:
     """
     Apply callable to 2D list of args using a ThreadPool. Args are unpacked using star operator, 
     and must be supplied in the correct order the function requires its positional arguments.
-    This function tracks progress with tqdm progressbar.
 
     Args:
     transform: function with some set of positional arguments, to be applied in parallel using the ThreadPool
@@ -26,10 +32,11 @@ def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = 6
     def starmap_decorator(args):
         return transform(*args)
     
-    with ThreadPool(nthreads) as TP:
-        results = list(tqdm(TP.imap(starmap_decorator, args), total=len(args))) # Use tqdm iterator to update progress bar automatically
-        TP.close() # Inform pool there will be no further job submissions
-        TP.join() # Await pool jobs
+    with ThreadPool(nthreads) as pool:
+        # results = list(tqdm(pool.imap(starmap_decorator, args), total=len(args), miniters=1)) # Use tqdm iterator to update progress bar automatically
+        # pool.close() # Inform pool there will be no further job submissions
+        # pool.join() # Await pool jobs
+        results = pool.starmap(transform, args)
     return results
 
 def _process_and_save(orig_path: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
@@ -44,10 +51,13 @@ def _process_and_save(orig_path: str, target_path: str, transform: Callable, *, 
     """
     if not force_transform:
         if Path(target_path).exists():
-            return
+            # print(target_path, "exists")
+            return True
+    print("called with {}".format(orig_path))
     img = cv2.imread(str(orig_path))
     processed = transform(img)
-    return cv2.imwrite(str(target_path), processed)
+    ret = cv2.imwrite(str(target_path), processed)
+    return ret
 
 def remove_hair(img_list: List[str]) -> None:
     """
@@ -71,6 +81,10 @@ def remove_hair(img_list: List[str]) -> None:
     # Run
     print("Beginning transformations, this may take a while...")
     start = time.perf_counter()
-    result = _apply_params_async(_process_and_save, args)
+    result = _apply_params_async(_process_and_save, args, nthreads=8)
     print("Finished transformations after {:.03f}s".format(time.perf_counter()-start))
 
+if __name__ == "__main__":
+    df = database.get_df()
+    img_names = df['img_id'].to_list()
+    remove_hair(img_names)
