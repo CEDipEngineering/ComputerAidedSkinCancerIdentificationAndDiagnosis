@@ -28,6 +28,7 @@ Database URL: https://data.mendeley.com/datasets/zr7vgbcyr2/1
 - Terminar modelo Stacked
 - Integrar modelo Stacked com API
 - Resolver GPU Monstrão
+
 (Todos)
 - Criar coluna cor cabelo
 
