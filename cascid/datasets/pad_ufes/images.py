@@ -61,7 +61,7 @@ def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
     print("Please, apply preprocessing to all images that will be used beforehand")
     print("Preprocessing a list of images can be done using cascid.image.apply_preprocessing.remove_hair(img_list)")
     print("\n"*3)
-    raise FileNotFoundError
+    raise FileNotFoundError("Supplied image does not have a preprocessed file, read above error")
 
 if __name__ == "__main__":
     df = database.get_df() # Get metadata
