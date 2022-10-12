@@ -16,8 +16,8 @@ from tensorflow.keras.utils import load_img, img_to_array
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
-from cascid.configs import config, pad_ufes
-from cascid import database
+from cascid.configs import config, pad_ufes_cnf
+from cascid.datasets.pad_ufes import database
 
 # Run with nohup python3 model.py &
 
@@ -38,14 +38,14 @@ FEATURES_FILE = FERNANDO_PATH / 'features.pkl'
 MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning_effnet'
 ONE_HOT_CATEGORIES_PATH = MODEL_PATH / "one_hot_categories.pkl"
 
-IMDIR = pad_ufes.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
+IMDIR = pad_ufes_cnf.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
 
 
 def cache_images():
     """
     Cache images to IMAGE_CACHE directory
     """
-    df = database.get_db()
+    df = database.get_df()
 
     print("Reading and splitting dataset into train, test and validation")
     MulticlassEncoder = OneHotEncoder(sparse=False) # OHE for y encoding

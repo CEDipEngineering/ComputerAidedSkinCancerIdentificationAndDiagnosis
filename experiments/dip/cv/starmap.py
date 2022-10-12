@@ -5,8 +5,8 @@ import numpy as np
 from tqdm import tqdm
 import cv2
 from pathlib import Path
-from cascid import database
-from cascid.configs import pad_ufes
+from cascid.datasets.pad_ufes import database
+from cascid.configs import pad_ufes_cnf
 import time
 from cascid.image_preprocessing import adaptive_hair_removal
 
@@ -42,13 +42,13 @@ def process_and_save(orig_path: str, target_path: str, transform: Callable, *, f
     cv2.imwrite(str(target_path), processed)
 
 def main():
-    df = database.get_db()
+    df = database.get_df()
     df = df.sample(25) # testing
 
     # Arg 1
-    orig_names = df['img_id'].apply(lambda x: str(pad_ufes.IMAGES_DIR / x)).to_numpy().reshape(-1,1)
+    orig_names = df['img_id'].apply(lambda x: str(pad_ufes_cnf.IMAGES_DIR / x)).to_numpy().reshape(-1,1)
     # Arg 2
-    target_names = df['img_id'].apply(lambda x: str(pad_ufes.HAIRLESS_DIR / x)).to_numpy().reshape(-1,1)
+    target_names = df['img_id'].apply(lambda x: str(pad_ufes_cnf.HAIRLESS_DIR / x)).to_numpy().reshape(-1,1)
     # Arg 3
     func = np.array(list(repeat(adaptive_hair_removal,len(orig_names))), dtype=object).reshape(-1,1)
     # Stack into list

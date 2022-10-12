@@ -1,5 +1,5 @@
 from typing import Dict
-from cascid.configs import config, pad_ufes
+from cascid.configs import config, pad_ufes_cnf
 from tensorflow import keras
 from keras.models import load_model
 from sklearn.preprocessing import OneHotEncoder
@@ -56,7 +56,7 @@ class PredictiveModel():
 if __name__ == "__main__":
     pm = PredictiveModel()
     print(pm.model.summary())
-    image = cv2.cvtColor(cv2.imread(str(pad_ufes.IMAGES_DIR / "PAT_1842_3615_850.png")), cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(cv2.imread(str(pad_ufes_cnf.IMAGES_DIR / "PAT_1842_3615_850.png")), cv2.COLOR_BGR2RGB)
     # print(f"{image.shape=}")
     print(pm.produce_report(image))
 
