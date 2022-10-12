@@ -10,9 +10,9 @@ from keras.utils import load_img, img_to_array
 
 #sklearn
 from sklearn.ensemble import RandomForestClassifier
-from cascid.configs import pad_ufes
+from cascid.configs import pad_ufes_cnf
 
-IMDIR = pad_ufes.IMAGES_DIR
+IMDIR = pad_ufes_cnf.IMAGES_DIR
 
 class StackedModel():
     """
