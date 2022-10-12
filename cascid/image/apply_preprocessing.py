@@ -13,7 +13,7 @@ import cv2
 # from tqdm import tqdm
 
 # Cascid imports
-from cascid.datasets.pad_ufes import database
+from cascid.datasets.pad_ufes import database, images
 from cascid.configs import pad_ufes_cnf
 from cascid.image.image_preprocessing import adaptive_hair_removal
 
@@ -39,7 +39,7 @@ def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = c
         results = pool.starmap(transform, args)
     return results
 
-def _process_and_save(orig_path: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
+def _process_and_save(img_name: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
     """
     Function to apply processing to images, and save results.
     Args:
@@ -53,8 +53,8 @@ def _process_and_save(orig_path: str, target_path: str, transform: Callable, *, 
         if Path(target_path).exists():
             # print(target_path, "exists")
             return True
-    print("called with {}".format(orig_path))
-    img = cv2.imread(str(orig_path))
+    # print("called with {}".format(img_name))
+    img = images.get_raw_image(img_name, (512,512))
     processed = transform(img)
     ret = cv2.imwrite(str(target_path), processed)
     return ret
@@ -68,10 +68,9 @@ def remove_hair(img_list: List[str]) -> None:
     Args:
     img_list: List of strings of image names, as found in metadata, such as ['PAT_2046_4323_394.png'].
     """
-    prepend_raw_dir = lambda x: str(pad_ufes_cnf.IMAGES_DIR / x)
     prepend_output_dir = lambda x: str(pad_ufes_cnf.HAIRLESS_DIR / x)
     # Arg 1
-    orig_names = np.array([prepend_raw_dir(i) for i in img_list]).reshape(-1,1)
+    orig_names = np.array(img_list).reshape(-1,1)
     # Arg 2
     target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
     # Arg 3
@@ -82,7 +81,11 @@ def remove_hair(img_list: List[str]) -> None:
     print("Beginning transformations, this may take a while...")
     start = time.perf_counter()
     result = _apply_params_async(_process_and_save, args, nthreads=8)
-    print("Finished transformations after {:.03f}s".format(time.perf_counter()-start))
+    elapsed = time.perf_counter()-start
+    hour=int(elapsed//3600)
+    minute=int((elapsed%3600)//60)
+    seconds=float((elapsed%3600)%60)
+    print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
 
 if __name__ == "__main__":
     df = database.get_df()
