@@ -1,13 +1,13 @@
 import pandas as pd
-from cascid.configs import isic
-from cascid import isic_fetcher
+from cascid.configs import isic_cnf
+from cascid.datasets.isic import fetcher
 import os
 
-def get_db() -> pd.DataFrame:
+def get_df() -> pd.DataFrame:
     """
     Simple function to read metadata csv file for isic dataset.
     """
-    df = pd.read_csv(isic.METADATA, index_col=0)
+    df = pd.read_csv(isic_cnf.METADATA, index_col=0)
     return df
 
 def update_all_files(df: pd.DataFrame) -> None:
@@ -30,8 +30,8 @@ def update_all_files(df: pd.DataFrame) -> None:
     i = 0
     for id, url in zip(df["isic_id"], df["image_url"]):
         print("Count: {}/{} ({:.02f}%)\r".format(i, count, (i/count)*100), end="")
-        if not os.path.exists(isic.IMAGES_DIR / (id + ".jpg")):
-            isic_fetcher.download_image(
+        if not os.path.exists(isic_cnf.IMAGES_DIR / (id + ".jpg")):
+            fetcher.download_image(
                 image_url=url,
                 isic_id=id
             )

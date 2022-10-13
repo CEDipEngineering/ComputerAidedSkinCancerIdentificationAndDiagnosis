@@ -24,8 +24,8 @@ from sklearn.preprocessing import OneHotEncoder
 import cv2 as cv
 
 
-from cascid.configs import config, pad_ufes
-from cascid import database
+from cascid.configs import config, pad_ufes_cnf
+from cascid.datasets.pad_ufes import database
 
 # Local py script
 from model import *
@@ -46,12 +46,12 @@ IMAGE_CACHE = FERNANDO_PATH / 'img_cache.pkl'
 FEATURES_FILE = FERNANDO_PATH / 'features.pkl'
 MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning'
 
-IMDIR = pad_ufes.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
+IMDIR = pad_ufes_cnf.PREPRO_DIR # Can also be pad_ufes.IMAGES_DIR 
 
 
 def compute_features():
 
-    df = database.get_db()
+    df = database.get_df()
 
     MulticlassEncoder = OneHotEncoder(sparse=False) # OHE for y encoding
     Y = MulticlassEncoder.fit_transform(df[["diagnostic"]].to_numpy())

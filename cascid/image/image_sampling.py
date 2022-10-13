@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from pathlib import Path
-from cascid.configs import pad_ufes
+from cascid.configs import pad_ufes_cnf
 
 
-DATA_DIR = pad_ufes.METADATA
+DATA_DIR = pad_ufes_cnf.METADATA
 
-IMAGE_DIR = pad_ufes.IMAGES_DIR
+IMAGE_DIR = pad_ufes_cnf.IMAGES_DIR
 
 def plot_age_distribution(df: pd.DataFrame) -> plt.figure:
     '''
@@ -84,7 +84,7 @@ def apply_processing_show_sample_pictures(df: pd.DataFrame, func, n_samples=9):
     patients = microdf['patient_id'].to_list()
     results = []
     for i in range(n_samples):
-        filename = str(pad_ufes.IMAGES_DIR / imgs[i])
+        filename = str(pad_ufes_cnf.IMAGES_DIR / imgs[i])
         img = cv2.imread(filename)[:,:,::-1]
         processed = func(img)
         results.append(processed)
