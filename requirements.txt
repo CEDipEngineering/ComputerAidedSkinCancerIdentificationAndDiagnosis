@@ -12,4 +12,3 @@ keras
 scikit-learn
 requests
 tensorflow-gpu==2.8.3
-tqdm

@@ -5,7 +5,7 @@ import requests, zipfile
 from io import BytesIO
 import time
 from shutil import rmtree
-from cascid.configs import pad_ufes
+from cascid.configs import pad_ufes_cnf
 
 def install_data_ufes(FORCE_INSTALL=False):
     '''
@@ -13,11 +13,11 @@ def install_data_ufes(FORCE_INSTALL=False):
     FORCE_INSTALL parameter forces deletion and reinstall of dataset.
     '''
     
-    pad_ufes_dir = pad_ufes.PAD_UFES_DIR # Dir for PAD UFES    
+    pad_ufes_dir = pad_ufes_cnf.PAD_UFES_DIR # Dir for PAD UFES    
     if FORCE_INSTALL: # Force install ensures download
         
         # rmtree(pad_ufes.PAD_UFES_DIR.parents[1]) # Erase everything
-        pad_ufes.IMAGES_DIR.mkdir(parents=True, exist_ok=True) # Make it real
+        pad_ufes_cnf.IMAGES_DIR.mkdir(parents=True, exist_ok=True) # Make it real
 
         # File url 
         url = "https://md-datasets-cache-zipfiles-prod.s3.eu-west-1.amazonaws.com/zr7vgbcyr2-1.zip"
