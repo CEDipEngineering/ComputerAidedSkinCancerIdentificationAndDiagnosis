@@ -38,3 +38,5 @@ def transform_diagnose_to_binary(diagnose, dict_transform):
 
 
 
+
+
