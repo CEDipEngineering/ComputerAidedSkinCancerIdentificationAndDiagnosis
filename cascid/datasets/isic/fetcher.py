@@ -97,7 +97,10 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
         print("Done!")
     return lesion_image_list
 
-def download_image(image_url: str, isic_id: str) -> None:
+def download_image(isic_id: str) -> None:
+    resp = requests.get(isic_cnf.BASE_API_URL + '/images/' + isic_id) # Send get request to api to get new download link
+    resp = json.loads(resp.content) # Convert to json
+    image_url = resp['files']['full']['url']
     img_bytes = requests.get(image_url)
     img_path = isic_cnf.IMAGES_DIR / (isic_id+".jpg")
     with open(img_path , "wb") as imfile:
