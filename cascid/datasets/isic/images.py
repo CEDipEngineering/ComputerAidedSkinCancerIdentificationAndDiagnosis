@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Tuple
-from cascid.configs import pad_ufes_cnf
-from cascid.datasets.pad_ufes import database
+from cascid.configs import isic_cnf
+from cascid.datasets.isic import database
 import numpy as np
 from tensorflow import keras
 from keras.utils import load_img, img_to_array
@@ -33,12 +33,12 @@ def get_raw_image(img_name: str, image_shape: Tuple[int, int] = None) -> np.ndar
     Example:
 
     ## Load first image from dataset:    
-    df = datasets.pad_ufes.database.get_df() # Get metadata
+    df = datasets.isic.database.get_df() # Get metadata
     
     img_raw = get_raw_image(df.iloc[0]['img_id'], (128, 128)) # Get first image raw 
 
     """
-    return _load_image(img_name, pad_ufes_cnf.IMAGES_DIR, image_shape)
+    return _load_image(img_name, isic_cnf.IMAGES_DIR, image_shape)
 
 
 def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
@@ -54,13 +54,13 @@ def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
     Example:
 
     ## Load first image from dataset:    
-    df = datasets.pad_ufes.database.get_df() # Get metadata
+    df = datasets.isic.database.get_df() # Get metadata
     
     img_raw = get_hairless_image(df.iloc[0]['img_id'], (128, 128)) # Get first image raw 
 
     """
-    if (pad_ufes_cnf.HAIRLESS_DIR / img_name).exists():
-        return _load_image(img_name, pad_ufes_cnf.HAIRLESS_DIR, image_shape)
+    if (isic_cnf.HAIRLESS_DIR / img_name).exists():
+        return _load_image(img_name, isic_cnf.HAIRLESS_DIR, image_shape)
     print("Supplied image name '{}' has no preprocessed file found".format(img_name))
     print("Please, apply preprocessing to all images that will be used beforehand")
     print("Preprocessing a list of images can be done using cascid.image.apply_preprocessing.remove_hair(img_list)")
