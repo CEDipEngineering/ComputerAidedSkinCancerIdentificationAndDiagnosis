@@ -9,6 +9,7 @@ from keras.utils import load_img, img_to_array
 _warning_load_image_without_shape = False
 
 def _load_image(img_name: str, prefix: Path, shape: Tuple[int, int] = None) -> np.ndarray:
+    global _warning_load_image_without_shape
     if shape is None:
         if not _warning_load_image_without_shape:
             print("Image shape not specified in image getter, will always default to (128, 128). This warning will only appear once after loading the module.")
