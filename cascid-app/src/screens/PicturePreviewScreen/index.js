@@ -29,7 +29,7 @@ export function PicturePreviewScreen({navigation, route}){
             const uploadImageResponse = await uploadImage(imageToBase64)
             const predictImageResponse = await predictImage(uploadImageResponse.data.path)
             console.log(predictImageResponse)
-            navigation.navigate("ResultsScreen", 
+            navigation.navigate("MetadataSceen", 
                 {   
                     imageUri: imagePreview.uri, 
                     prediction: predictImageResponse.data.report})
