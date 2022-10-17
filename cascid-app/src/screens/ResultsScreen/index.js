@@ -39,7 +39,7 @@ export function ResultsScreen({navigation, route}){
                     />
                     <Tip 
                         Icon={() => <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={30} color={theme.colors.primary} />}
-                        title={"Conffidence"}
+                        title={"Confidence"}
                         text={"21%"}
                     />
                 </View>
