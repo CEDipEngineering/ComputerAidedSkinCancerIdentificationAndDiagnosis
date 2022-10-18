@@ -18,8 +18,8 @@ from tensorflow.keras.utils import load_img, img_to_array
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
-from cascid.configs import config, pad_ufes
-from cascid import database
+from cascid.configs import config, pad_ufes_cnf
+from cascid.datasets.pad_ufes import database
 
 ## Consts
 
@@ -37,13 +37,13 @@ IMAGE_CACHE = EXPERIMENT_PATH / 'img_cache.pkl'
 FEATURES_FILE = EXPERIMENT_PATH / 'features.pkl'
 MODEL_PATH = EXPERIMENT_PATH / 'models' / 'deep_cnn'
 
-IMDIR = pad_ufes.IMAGES_DIR # Can be pad_ufes.IMAGES_DIR or pad_ufes.PREPRO_DIR 
+IMDIR = pad_ufes_cnf.IMAGES_DIR # Can be pad_ufes.IMAGES_DIR or pad_ufes.PREPRO_DIR 
 
 ## Functions
 
 def load_image(name: str):
     pil_img = load_img(
-        str(pad_ufes.IMAGES_DIR / name),
+        str(pad_ufes_cnf.IMAGES_DIR / name),
         grayscale=False,
         color_mode='rgb',
         target_size=(IMAGE_SHAPE[0], IMAGE_SHAPE[1]),
@@ -97,7 +97,7 @@ def model_run(x, y):
 def cache_images():
 
     # Read df
-    df = database.get_db()
+    df = database.get_df()
     df = df[["img_id", "diagnostic"]]
     print(df.head(3))
 

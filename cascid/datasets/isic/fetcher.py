@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from typing import List
-from cascid.configs import config, isic
+from cascid.configs import config, isic_cnf
 import requests
 import json
 import urllib
@@ -69,7 +69,7 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
             limit = n_samples
             query_params = {"limit":limit, "query":"diagnosis:" + diagnosis}
             params = urllib.parse.urlencode(query_params, quote_via=urllib.parse.quote) # Encode special characters such as space and quotation marks
-            out = _fetch(isic.SEARCH_URL, params=params)
+            out = _fetch(isic_cnf.SEARCH_URL, params=params)
             lesion_image_list += out["lesion_image_list"]
     else:
         next_urls = dict()
@@ -79,7 +79,7 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
             limit = 100
             query_params = {"limit":limit, "query":"diagnosis:" + diagnosis}
             params = urllib.parse.urlencode(query_params, quote_via=urllib.parse.quote) # Encode special characters such as space and quotation marks
-            out = _fetch(isic.SEARCH_URL, params=params)
+            out = _fetch(isic_cnf.SEARCH_URL, params=params)
             next_urls[diagnosis] = out["next"]
             lesion_image_list += out["lesion_image_list"]
         print("{:04d} images left...\r".format(n_samples), end="\r")        
@@ -97,9 +97,12 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
         print("Done!")
     return lesion_image_list
 
-def download_image(image_url: str, isic_id: str) -> None:
+def download_image(isic_id: str) -> None:
+    resp = requests.get(isic_cnf.BASE_API_URL + '/images/' + isic_id) # Send get request to api to get new download link
+    resp = json.loads(resp.content) # Convert to json
+    image_url = resp['files']['full']['url']
     img_bytes = requests.get(image_url)
-    img_path = isic.IMAGES_DIR / (isic_id+".jpg")
+    img_path = isic_cnf.IMAGES_DIR / (isic_id+".jpg")
     with open(img_path , "wb") as imfile:
         imfile.write(img_bytes.content)
 
@@ -107,11 +110,11 @@ def save_metadata(image_list: List[LesionImage]):
     df = pd.DataFrame(list(map(lambda x: x.to_dict(), image_list))) # Build dataframe from list of dicts
     df["img_id"] = df["isic_id"].apply(lambda id: id + ".jpg") # Make column for image name
     try:
-        old_df = pd.read_csv(isic.METADATA, index_col=0)
+        old_df = pd.read_csv(isic_cnf.METADATA, index_col=0)
         df_merge = pd.concat([old_df,df]).drop_duplicates().reset_index(drop=True)
-        df_merge.to_csv(isic.METADATA)
+        df_merge.to_csv(isic_cnf.METADATA)
     except FileNotFoundError:
-        df.to_csv(isic.METADATA)
+        df.to_csv(isic_cnf.METADATA)
         return
     
 
