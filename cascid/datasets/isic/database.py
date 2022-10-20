@@ -3,6 +3,7 @@
 from typing import Tuple
 import os
 import pickle as pk
+from multiprocessing.pool import ThreadPool
 # External imports
 import pandas as pd
 import numpy as np
@@ -36,18 +37,13 @@ def update_all_files(df: pd.DataFrame) -> None:
     update_all_files(df)
 
     """
-    print("Downloading missing images:")
-    count = len(df["isic_id"])
-    i = 0
-    for id in df["isic_id"]:
-        print("Count: {}/{} ({:.02f}%)\r".format(i, count, (i/count)*100), end="")
-        if not os.path.exists(isic_cnf.IMAGES_DIR / (id + ".jpg")):
-            fetcher.download_image(
-                isic_id=id
-            )
-        i += 1
-    print(" "*100, "\r", end="")
-    print("Images Downloaded!")
+    def check_and_download(isic_id: str):
+        if not os.path.exists(isic_cnf.IMAGES_DIR / (isic_id + ".jpg")):
+            fetcher.download_image(isic_id=isic_id)
+    print("Beginning image downloads...")
+    with ThreadPool(8) as p:
+        p.map(check_and_download, df["isic_id"].to_list())
+    print("Done")
     return
 
 def _load_cache(path):
