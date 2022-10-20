@@ -4,7 +4,7 @@ from cascid.configs import isic_cnf
 from cascid.datasets.isic import database
 import numpy as np
 from tensorflow import keras
-from keras.utils import load_img, img_to_array
+from tensorflow.keras.utils import load_img, img_to_array
 
 _warning_load_image_without_shape = False
 
