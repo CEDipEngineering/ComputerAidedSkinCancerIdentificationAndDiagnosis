@@ -5,7 +5,8 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from functools import partial
 import pickle as pk
-from cascid.datasets.pad_ufes import database
+from cascid.datasets.pad_ufes import database as pad_ufes_db
+from cascid.datasets.isic import database as isic_db
 
 from tensorflow import keras
 from keras.models import load_model
@@ -16,8 +17,10 @@ from typing import Callable, Tuple
 
 from cascid.configs.config import DATA_DIR
 
+RANDOM_STATE=42
+IMAGE_SIZE = (256,256,3)
+
 EXPERIMENT_DIR = DATA_DIR / 'experiments'
-MODEL_PATH.mkdir(exist_ok=True, parents=True)
 
 def ResNet(amt_64, amt_128, amt_256, amt_512, augmentation = False):
     # Aurelien Geron, Hands-On Machine Learning with Scikit-Learn, Keras & Tensorflow.
@@ -89,6 +92,7 @@ def load_results(path):
 
 
 def run_and_save(path: Path, load_db_func: Callable, augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int]):
+    path.mkdir(exist_ok=True, parents=True)
     x_train, x_test, y_train, y_test = load_db_func()
 
     OHE = OneHotEncoder(sparse=False)
@@ -115,7 +119,7 @@ def run_and_save(path: Path, load_db_func: Callable, augmentation: bool, learnin
     history = model.fit(
         x_train,
         y_train,
-        epochs=1000,
+        epochs=800,
         batch_size=128,
         validation_split=0.15
     )
@@ -125,13 +129,24 @@ def run_and_save(path: Path, load_db_func: Callable, augmentation: bool, learnin
 if __name__ == "__main__":
     # 'resnet18': (2, 2, 2, 2)
     # 'resnet34': (3, 4, 6, 3)
-    
+
     # PAD-UFES
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_aug_raw', load_db_func=database.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet18_padufes_aug_raw', load_db_func=database.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_aug_hairless', load_db_func=database.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_aug_hairless', load_db_func=database.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_noaug_raw', load_db_func=database.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet18_padufes_noaug_raw', load_db_func=database.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_noaug_hairless', load_db_func=database.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
-    run_and_save(EXPERIMENT_DIR / 'experiment_resnet34_padufes_noaug_hairless', load_db_func=database.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34_aug_raw', load_db_func=pad_ufes_db.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34_aug_hairless', load_db_func=pad_ufes_db.get_train_test_images_hairless, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34_noaug_raw', load_db_func=pad_ufes_db.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34_noaug_hairless', load_db_func=pad_ufes_db.get_train_test_images_hairless, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18_aug_raw', load_db_func=pad_ufes_db.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18_aug_hairless', load_db_func=pad_ufes_db.get_train_test_images_hairless, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18_noaug_raw', load_db_func=pad_ufes_db.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18_noaug_hairless', load_db_func=pad_ufes_db.get_train_test_images_hairless, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+
+    # ISIC
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34_aug_raw', load_db_func=isic_db.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34_aug_hairless', load_db_func=isic_db.get_train_test_images_hairless, augmentation=True, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34_noaug_raw', load_db_func=isic_db.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34_noaug_hairless', load_db_func=isic_db.get_train_test_images_hairless, augmentation=False, learning_rate=0.0001, resnet_size=(3, 4, 6, 3))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18_aug_raw', load_db_func=isic_db.get_train_test_images_raw, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18_aug_hairless', load_db_func=isic_db.get_train_test_images_hairless, augmentation=True, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18_noaug_raw', load_db_func=isic_db.get_train_test_images_raw, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18_noaug_hairless', load_db_func=isic_db.get_train_test_images_hairless, augmentation=False, learning_rate=0.0001, resnet_size=(2, 2, 2, 2))
+
