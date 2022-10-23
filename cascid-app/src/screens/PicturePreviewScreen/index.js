@@ -1,8 +1,6 @@
 import React from "react"
 import {View, SafeAreaView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import { showMessage } from "react-native-flash-message";
 
 import { Tip } from "../../components/Tip";
 import { PageHeader } from "../../components/PageHeader"
@@ -11,36 +9,9 @@ import { styles } from "./styles";
 import { theme } from "../../global/styles/theme";
 import { metrics } from "../../global/styles/metrics";
 
-import { uploadImage, predictImage } from "../../services/requests/picturePreviewScreen";
-
 export function PicturePreviewScreen({navigation, route}){
 
     const {imagePreview} = route.params
-
-    // functions
-    async function readImageAsBase64(imagePath) {
-        return await FileSystem.readAsStringAsync(
-            imagePath, {encoding: FileSystem.EncodingType.Base64})
-    }
-
-    async function sendImage(imagePath){
-        try {
-            const imageToBase64 = await readImageAsBase64(imagePath)
-            const uploadImageResponse = await uploadImage(imageToBase64)
-            const predictImageResponse = await predictImage(uploadImageResponse.data.path)
-            console.log(predictImageResponse)
-            navigation.navigate("MetadataSceen", 
-                {   
-                    imageUri: imagePreview.uri, 
-                    prediction: predictImageResponse.data.report})
-            
-        }
-        catch (error){
-            console.log(error.response)
-            showMessage({ message: "something went wrong", icon: 'danger', type: 'danger'});
-        }        
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <PageHeader 
@@ -70,7 +41,9 @@ export function PicturePreviewScreen({navigation, route}){
                 <Button 
                     text={"analyze"}
                     textColor={theme.colors.white}
-                    OnPress={()=> {sendImage(imagePreview.uri)}}
+                    OnPress={()=> 
+                        navigation.navigate("MetadataSceen", {imageUri: imagePreview.uri}
+                    )}
                     extraStyle={{
                     backgroundColor: theme.colors.primary,
                     fontSize: metrics.textSize,

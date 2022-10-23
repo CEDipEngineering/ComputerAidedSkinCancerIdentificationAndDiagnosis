@@ -7,19 +7,8 @@ const iphone = Platform.OS === 'ios'
 
 export const styles = StyleSheet.create({
     container: {
-        marginTop: 300,
         flex: 1,
+        padding: metrics.margin,
         backgroundColor: theme.colors.background,
-    },
-
-    test: {
-        width: "100%",
-        flexDirection: "row",
-        backgroundColor: theme.colors.gray
-    },
-
-    title: {
-        color: theme.colors.black
-
     }
 })
