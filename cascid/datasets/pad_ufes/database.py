@@ -40,10 +40,10 @@ def _load_cache(path):
 
 def _save_cache(path, x_train, x_test, y_train, y_test):
     split = dict()
-    split['x_train'], = x_train
-    split['x_test'], = x_test
-    split['y_train'], = y_train
-    split['y_test'], = y_test
+    split['x_train'] = x_train
+    split['x_test'] = x_test
+    split['y_train'] = y_train
+    split['y_test'] = y_test
     with open(TRAIN_TEST_CACHE_RAW, 'wb') as fl:
         split = pk.dump(split,fl)
 
@@ -90,6 +90,39 @@ def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 4
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
         _save_cache(TRAIN_TEST_CACHE_HAIRLESS)
         return x_train, x_test, y_train, y_test
+    
+def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42):
+    database = get_df()
+    
+    database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']] = database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']].astype("bool")
+
+    database = database.drop_duplicates()
+    
+    df = database.copy()
+
+    df = df.sort_values('diameter_1', ascending=False).groupby('patient_id').first().reset_index()
+    
+    df['is_cancer'] = df['diagnostic'].apply(lambda x: 'Not' if x in ['ACK','NEV','SEK'] else 'Cancer')
+    
+    selected_columns = ['smoke', 'drink', 'skin_cancer_history', 'cancer_history', 'age','pesticide','is_cancer']
+
+    df = df[selected_columns].copy()
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        df.drop(['is_cancer'], axis=1).to_numpy().astype('float64'),
+        df['is_cancer'].to_numpy(),
+        test_size = test_size,
+        random_state=random_state,
+    )
+    
+    x_train_metadata, x_train_stacked, y_train_metadata, y_train_stacked = train_test_split(
+        x_train,
+        y_train,
+        test_size = 0.5,
+        random_state=random_state,
+    )
+    
+    return x_train_metadata, x_train_stacked, x_test, y_train_metadata, y_train_stacked, y_test
 
 if __name__ == "__main__":
     # Test function
