@@ -29,7 +29,7 @@ def get_df() -> pd.DataFrame:
     return df 
 
 def _load_cache(path):
-    with open(TRAIN_TEST_CACHE_RAW, 'rb') as fl:
+    with open(path, 'rb') as fl:
         split = pk.load(fl)
     return (
         split['x_train'],
@@ -44,10 +44,10 @@ def _save_cache(path, x_train, x_test, y_train, y_test):
     split['x_test'] = x_test
     split['y_train'] = y_train
     split['y_test'] = y_test
-    with open(TRAIN_TEST_CACHE_RAW, 'wb') as fl:
+    with open(path, 'wb') as fl:
         split = pk.dump(split,fl)
 
-def get_train_test_images_raw(test_size: float = 0.2, random_state: int = 42) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def get_train_test_images_raw(test_size: float = 0.2, random_state: int = 42, image_shape=(256, 256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Automated caching implementation of sklearn's train_test_split.
     This function uses raw images from the dataset, loaded at 256x256, in RGB.
@@ -62,14 +62,14 @@ def get_train_test_images_raw(test_size: float = 0.2, random_state: int = 42) ->
         x_train, x_test, y_train, y_test = _load_cache(TRAIN_TEST_CACHE_RAW)
     except FileNotFoundError:
         df = get_df()
-        x = df['img_id'].apply(lambda x: images.get_raw_image(x, (256,256))).to_numpy()
+        x = df['img_id'].apply(lambda x: images.get_raw_image(x, image_shape)).to_numpy()
         x = np.array([x[i] for i in range(len(x))])
         y=df['diagnostic'].to_numpy().reshape(-1,1)
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
         _save_cache(TRAIN_TEST_CACHE_RAW)
         return x_train, x_test, y_train, y_test
 
-def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 42) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 42, image_shape=(256, 256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Automated caching implementation of sklearn's train_test_split.
     This function uses preprocessed images (reduced hair) from the dataset, loaded at 256x256, in RGB.
@@ -84,7 +84,7 @@ def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 4
         x_train, x_test, y_train, y_test = _load_cache(TRAIN_TEST_CACHE_HAIRLESS)
     except FileNotFoundError:
         df = get_df()
-        x = df['img_id'].apply(lambda x: images.get_hairless_image(x, (256,256))).to_numpy()
+        x = df['img_id'].apply(lambda x: images.get_hairless_image(x, image_shape)).to_numpy()
         x = np.array([x[i] for i in range(len(x))])
         y=df['diagnostic'].to_numpy().reshape(-1,1)
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
