@@ -112,6 +112,7 @@ def save_metadata(image_list: List[LesionImage]):
     try:
         old_df = pd.read_csv(isic_cnf.METADATA, index_col=0)
         df_merge = pd.concat([old_df,df]).drop_duplicates().reset_index(drop=True)
+        df_merge = df_merge.drop_duplicates(subset=['isic_id'], keep='last').reset_index(drop=True)
         df_merge.to_csv(isic_cnf.METADATA)
     except FileNotFoundError:
         df.to_csv(isic_cnf.METADATA)
