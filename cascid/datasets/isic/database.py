@@ -19,6 +19,14 @@ def get_df() -> pd.DataFrame:
     Read dataframe from metadata for this dataset.
     """
     df = pd.read_csv(isic_cnf.METADATA, index_col=0)
+    df['diagnostic'] = df['diagnostic'].replace({
+        'seborrheic keratosis' : 'SEK',
+        'actinic keratosis' : 'ACK',
+        'nevus' : 'NEV',
+        'squamous cell carcinoma' : 'SCC',
+        'basal cell carcinoma' : 'BCC',
+        'melanoma' : 'MEL', 
+    })
     return df
 
 def update_all_files(df: pd.DataFrame) -> None:

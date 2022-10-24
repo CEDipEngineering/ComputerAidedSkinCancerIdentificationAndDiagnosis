@@ -117,8 +117,6 @@ def save_metadata(image_list: List[LesionImage]):
         df.to_csv(isic_cnf.METADATA)
         return
     
-
-
 if __name__ == "__main__":
     images = fetch_from_isic(800, [
         "melanoma",
