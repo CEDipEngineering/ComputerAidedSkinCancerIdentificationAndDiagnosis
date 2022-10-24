@@ -1,10 +1,11 @@
 from pathlib import Path
 from typing import Tuple
 from cascid.configs import isic_cnf
-from cascid.datasets.isic import database
+from cascid.datasets.isic import database, fetcher
 import numpy as np
 from tensorflow import keras
 from keras.utils import load_img, img_to_array
+import os
 
 _warning_load_image_without_shape = False
 
@@ -39,8 +40,13 @@ def get_raw_image(img_name: str, image_shape: Tuple[int, int] = None) -> np.ndar
     img_raw = get_raw_image(df.iloc[0]['img_id'], (128, 128)) # Get first image raw 
 
     """
-    return _load_image(img_name, isic_cnf.IMAGES_DIR, image_shape)
-
+    try:
+        return _load_image(img_name, isic_cnf.IMAGES_DIR, image_shape)
+    except Exception as e:
+        print("Image {} seems corrupted, trying to delete and redownload...".format(img_name))
+        os.remove(isic_cnf.IMAGES_DIR / img_name)
+        fetcher.download_image(Path(img_name).stem)
+        return _load_image(img_name, isic_cnf.IMAGES_DIR, image_shape)
 
 def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
     """
