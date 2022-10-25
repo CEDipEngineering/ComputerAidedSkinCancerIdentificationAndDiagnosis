@@ -30,7 +30,9 @@ export function PicturePreviewScreen({navigation, route}){
             const predictImageResponse = await predictImage(uploadImageResponse.data.path)
             console.log(predictImageResponse)
             navigation.navigate("ResultsScreen", 
-                {imageUri: imagePreview.uri, prediction: predictImageResponse.data})
+                {   
+                    imageUri: imagePreview.uri, 
+                    prediction: predictImageResponse.data.report})
             
         }
         catch (error){

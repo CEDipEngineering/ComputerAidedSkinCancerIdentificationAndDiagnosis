@@ -245,6 +245,66 @@ def adaptive_hair_removal(img):
     return dst
 
 
+def adaptive_hair_removal2(img):
+    
+    UPPER_COLOR_THRESH = 50
+    LOWER_LIMIT = 1.375
+    
+    LOWER_COLOR_THRESH = 22
+    UPPER_LIMIT = 1.5
+    
+    # Hessian Calculation
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_paper_white_hair_t,img_paper_black_hair_t = calculate_hessian(gray)
+
+## Black Hairs morph
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l_channel, a, b = cv2.split(lab)
+    kernel = cv2.getStructuringElement(1,(17,17))
+    edges = cv2.morphologyEx(l_channel, cv2.MORPH_BLACKHAT, kernel)
+    _,thresh = cv2.threshold(edges,10,255,cv2.THRESH_BINARY)
+
+    kernel = np.ones((3,3),np.uint8)
+    dilation = cv2.dilate(img_paper_white_hair_t.astype('uint8'),kernel,iterations = 1)
+    
+## Metrics
+    bp_img_original = np.sum(img[img <= LOWER_COLOR_THRESH])
+    bp_gray_original = np.sum(gray[gray <= LOWER_COLOR_THRESH])
+    
+    bp_img_original_upper = np.sum(img[img <= UPPER_COLOR_THRESH])
+    bp_gray_original_upper = np.sum(gray[gray <= UPPER_COLOR_THRESH])
+
+# First inpainting  
+    dst = cv2.inpaint(img,dilation.astype(np.uint8),1,cv2.INPAINT_TELEA)    
+    dst_gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+    
+## Metrics
+    bp_dst = np.sum(dst[dst <= LOWER_COLOR_THRESH]) 
+    bp_gray_dst = np.sum(dst_gray[dst_gray <= LOWER_COLOR_THRESH])
+    
+    bp_dst_upper = np.sum(dst[dst <= UPPER_COLOR_THRESH]) 
+    bp_gray_dst_upper = np.sum(dst_gray[dst_gray <= UPPER_COLOR_THRESH])
+
+## Decision
+    ratio_gray = ratio_color = ratio_color_upper = ratio_gray_upper = 0
+    if bp_gray_original > 0:
+        ratio_gray = bp_gray_dst/bp_gray_original
+    if bp_img_original > 0:
+        ratio_color = bp_dst/bp_img_original
+        
+    if bp_img_original_upper > 0:
+        ratio_gray_upper = bp_dst_upper/bp_img_original_upper
+    if bp_gray_original_upper > 0:
+        ratio_color_upper = bp_gray_dst_upper/bp_gray_original_upper
+        
+    ## Apply black hair removal
+    if (ratio_gray >= UPPER_LIMIT or ratio_color >= UPPER_LIMIT) or (ratio_gray_upper >= LOWER_LIMIT or ratio_color_upper >= LOWER_LIMIT):
+        dst = cv2.inpaint(img,thresh.astype(np.uint8),1,cv2.INPAINT_TELEA)
+
+    return dst
+
+
+
 # ----------------------------------------- #
 # ---------- Contrast Enhancement --------- #
 # ----------------------------------------- #
