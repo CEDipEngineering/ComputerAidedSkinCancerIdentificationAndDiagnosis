@@ -97,7 +97,10 @@ def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 4
         _save_cache(TRAIN_TEST_CACHE_HAIRLESS, x_train, x_test, y_train, y_test)
         return x_train, x_test, y_train, y_test
     
-def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42):
+def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42, return_img_id: bool = False):
+    """
+    x_train_metadata, x_train_stacked, x_test, y_train_metadata, y_train_stacked, y_test = get_train_test_metadata()
+    """
     database = get_df()
     
     database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']] = database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']].astype("bool")
@@ -110,12 +113,12 @@ def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42):
     
     df['is_cancer'] = df['diagnostic'].apply(lambda x: 'Not' if x in ['ACK','NEV','SEK'] else 'Cancer')
     
-    selected_columns = ['smoke', 'drink', 'skin_cancer_history', 'cancer_history', 'age','pesticide','is_cancer']
+    selected_columns = ['smoke', 'drink', 'skin_cancer_history', 'cancer_history', 'age','pesticide','is_cancer', 'img_id']
 
     df = df[selected_columns].copy()
 
     x_train, x_test, y_train, y_test = train_test_split(
-        df.drop(['is_cancer'], axis=1).to_numpy().astype('float64'),
+        df.drop(['is_cancer'], axis=1),
         df['is_cancer'].to_numpy(),
         test_size = test_size,
         random_state=random_state,
@@ -127,8 +130,9 @@ def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42):
         test_size = 0.5,
         random_state=random_state,
     )
-    
-    return x_train_metadata, x_train_stacked, x_test, y_train_metadata, y_train_stacked, y_test
+    if return_img_id:
+        return x_train_metadata, x_train_stacked, x_test, y_train_metadata, y_train_stacked, y_test
+    return x_train_metadata.drop('img_id',axis=1).to_numpy().astype('float64'), x_train_stacked.drop('img_id',axis=1).to_numpy().astype('float64'), x_test.drop('img_id',axis=1).to_numpy().astype('float64'), y_train_metadata, y_train_stacked, y_test
 
 if __name__ == "__main__":
     # Test function

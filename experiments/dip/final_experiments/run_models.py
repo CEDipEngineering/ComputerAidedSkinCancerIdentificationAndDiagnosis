@@ -24,7 +24,7 @@ from cascid.configs.config import DATA_DIR
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
 EXPERIMENT_DIR = DATA_DIR / 'experiments'
-EPOCHS = 3
+EPOCHS = 500
 BATCH_SIZE = 128
 
 

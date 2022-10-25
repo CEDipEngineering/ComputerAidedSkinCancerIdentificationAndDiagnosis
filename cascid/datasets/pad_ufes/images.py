@@ -1,15 +1,18 @@
-from pathlib import Path
-from typing import Tuple, List
-import time
 import numpy as np
-from tensorflow import keras
-from keras.utils import load_img, img_to_array
+from pathlib import Path
+from typing import Tuple, List, Callable
 from itertools import repeat
+from multiprocessing.pool import ThreadPool
+from multiprocessing import cpu_count
+import time
+from tensorflow import keras
+from tensorflow.keras.utils import load_img, img_to_array
+import cv2
 
 from cascid.configs import pad_ufes_cnf
-from cascid.datasets.pad_ufes import database
-from cascid.image.apply_preprocessing import _apply_params_async, _process_and_save
+from cascid.datasets.pad_ufes import database, images
 from cascid.image.image_preprocessing import adaptive_hair_removal
+import os
 
 _warning_load_image_without_shape = False
 
@@ -100,6 +103,43 @@ def remove_hair(img_list: List[str]) -> None:
     minute=int((elapsed%3600)//60)
     seconds=float((elapsed%3600)%60)
     print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
+
+def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = cpu_count()//2) -> List:
+    """
+    Apply callable to 2D list of args using a ThreadPool. Args are unpacked using star operator, 
+    and must be supplied in the correct order the function requires its positional arguments.
+
+    Args:
+    transform: function with some set of positional arguments, to be applied in parallel using the ThreadPool
+    args: List of lists of args for each fucntion call. Given a function f(x,y), args might be: [[1,2],[3,4]].
+
+    If transform returns values, these values will be captured and returned in a list, in an order corresponding to
+    args.
+    """    
+    with ThreadPool(nthreads) as pool:
+        results = pool.starmap(transform, args)
+    return results
+
+def _process_and_save(img_name: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
+    """
+    Function to apply processing to images, and save results.
+    Args:
+    orig_path: str or Path-Like of iamge to be transformed
+    target_path: Destination of transformed image
+    transform: Callable that alters and returns modified image, callable is not expected to receive any arguments beside original image array
+    Kwargs:
+    force_transform: Must be keyworded, boolean, indicating whether to skip already present target_path images. Uses Path.exists() method to verify existence.
+    """
+    if not force_transform:
+        if Path(target_path).exists():
+            # print(target_path, "exists")
+            return True
+    # print("called with {}".format(img_name))
+    img = images.get_raw_image(img_name, (512,512))
+    processed = transform(img)
+    ret = cv2.imwrite(str(target_path), processed)
+    return ret
+
 
 if __name__ == "__main__":
     df = database.get_df() # Get metadata

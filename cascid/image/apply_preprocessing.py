@@ -1,9 +1,7 @@
 
 # Native imports
-from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import time
 from multiprocessing import cpu_count
 from typing import Callable, List
 
@@ -13,9 +11,7 @@ import cv2
 # from tqdm import tqdm
 
 # Cascid imports
-from cascid.datasets.pad_ufes import database, images
-from cascid.configs import pad_ufes_cnf
-from cascid.image.image_preprocessing import adaptive_hair_removal
+from cascid.datasets.pad_ufes import images
 
 def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = cpu_count()//2) -> List:
     """
