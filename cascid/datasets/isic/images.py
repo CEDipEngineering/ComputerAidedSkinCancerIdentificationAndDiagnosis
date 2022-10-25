@@ -1,10 +1,15 @@
 from pathlib import Path
-from typing import Tuple
-from cascid.configs import isic_cnf
-from cascid.datasets.isic import database, fetcher
+from typing import Tuple, List
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras.utils import load_img, img_to_array
+from itertools import repeat
+import time
+
+from cascid.configs import isic_cnf
+from cascid.datasets.isic import database, fetcher
+from cascid.image.apply_preprocessing import _apply_params_async, _process_and_save
+from cascid.image.image_preprocessing import adaptive_hair_removal
 
 _warning_load_image_without_shape = False
 
@@ -72,6 +77,35 @@ def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
     print("Preprocessing a list of images can be done using cascid.image.apply_preprocessing.remove_hair(img_list)")
     print("\n"*3)
     raise FileNotFoundError("Supplied image does not have a preprocessed file, read above error")
+
+def remove_hair(img_list: List[str]) -> None:
+    """
+    Preprocessing function, used to remove hair from list of images, and save preprocessed results in pad_ufes_cnf.HAIRLESS_DIR.
+    Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
+    Calling this function repeatedly with a single image on the list will result in extremely slow performance.
+
+    Args:
+    img_list: List of strings of image names, as found in metadata, such as ['PAT_2046_4323_394.png'].
+    """
+    prepend_output_dir = lambda x: str(isic_cnf.HAIRLESS_DIR / x)
+    # Arg 1
+    orig_names = np.array(img_list).reshape(-1,1)
+    # Arg 2
+    target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
+    # Arg 3
+    func = np.array(list(repeat(adaptive_hair_removal,len(orig_names))), dtype=object).reshape(-1,1)
+    # Stack into list
+    args = np.hstack([orig_names, target_names, func])
+    # Run
+    print("Beginning transformations, this may take a while...")
+    start = time.perf_counter()
+    result = _apply_params_async(_process_and_save, args, nthreads=8)
+    elapsed = time.perf_counter()-start
+    hour=int(elapsed//3600)
+    minute=int((elapsed%3600)//60)
+    seconds=float((elapsed%3600)%60)
+    print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
+
 
 if __name__ == "__main__":
     df = database.get_df() # Get metadata

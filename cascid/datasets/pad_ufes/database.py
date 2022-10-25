@@ -31,6 +31,10 @@ def get_df() -> pd.DataFrame:
 def _load_cache(path):
     with open(path, 'rb') as fl:
         split = pk.load(fl)
+
+    if (split['x_train'].shape[0] + split['x_test'].shape[0]) != get_df().shape[0]:
+        raise FileNotFoundError("Cache is outdated!")
+
     return (
         split['x_train'],
         split['x_test'],
@@ -60,13 +64,14 @@ def get_train_test_images_raw(test_size: float = 0.2, random_state: int = 42, im
     """
     try:
         x_train, x_test, y_train, y_test = _load_cache(TRAIN_TEST_CACHE_RAW)
+        return x_train, x_test, y_train, y_test
     except FileNotFoundError:
         df = get_df()
         x = df['img_id'].apply(lambda x: images.get_raw_image(x, image_shape)).to_numpy()
         x = np.array([x[i] for i in range(len(x))])
         y=df['diagnostic'].to_numpy().reshape(-1,1)
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
-        _save_cache(TRAIN_TEST_CACHE_RAW)
+        _save_cache(TRAIN_TEST_CACHE_RAW, x_train, x_test, y_train, y_test)
         return x_train, x_test, y_train, y_test
 
 def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 42, image_shape=(256, 256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -82,13 +87,14 @@ def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 4
     """
     try:
         x_train, x_test, y_train, y_test = _load_cache(TRAIN_TEST_CACHE_HAIRLESS)
+        return x_train, x_test, y_train, y_test
     except FileNotFoundError:
         df = get_df()
         x = df['img_id'].apply(lambda x: images.get_hairless_image(x, image_shape)).to_numpy()
         x = np.array([x[i] for i in range(len(x))])
         y=df['diagnostic'].to_numpy().reshape(-1,1)
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
-        _save_cache(TRAIN_TEST_CACHE_HAIRLESS)
+        _save_cache(TRAIN_TEST_CACHE_HAIRLESS, x_train, x_test, y_train, y_test)
         return x_train, x_test, y_train, y_test
     
 def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42):
