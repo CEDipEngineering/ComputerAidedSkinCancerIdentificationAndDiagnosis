@@ -11,6 +11,7 @@ from cascid.configs import hed_cnf
 from cascid.image import image_preprocessing
 from starlette.responses import StreamingResponse
 import io
+import os
 
 
 from app.model import PredictiveModel
@@ -77,7 +78,12 @@ async def read_file(fn):
         except: # preprocessing not ready yet
             img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         # prepro = image_preprocessing.red_band_unsharp(img)
-        HED_img = HED_segmentation.apply_HED(img)
+
+        print()
+        print(HED_segmentation.__file__)
+        print()
+
+        HED_img = HED_segmentation.HED_segmentation_borders(img)
         _, encoded_img = cv2.imencode('.jpg', HED_img)
         return StreamingResponse(io.BytesIO(encoded_img.tobytes()), media_type="image/png")
 
