@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import os
 from cascid.configs import hed_cnf
+from skimage.morphology import skeletonize
+
 
 HED_DIR = hed_cnf.HED_DIR
 OUTPUT_DIR = hed_cnf.HED_RESULTS
@@ -14,10 +16,6 @@ CAFFEMODEL = str(HED_DIR / "hed_pretrained_bsds.caffemodel")
 WIDTH = 300
 HEIGHT = 300
 
-
-print(PROTOTXT)
-print()
-print(CAFFEMODEL)
 
 class CropLayer(object):
     def __init__(self, params, blobs):
@@ -60,6 +58,28 @@ def apply_HED(image, preprocessing=None):
         out = preprocessing(out)
 
     return out
+
+
+
+def HED_segmentation_borders(original):
+
+    kernel_erosion = np.ones((3,3),np.uint8)
+    kernel_dilation = np.ones((5,5),np.uint8)
+
+    hed = apply_HED(original)
+
+    mask_erosion = cv.erode(hed,kernel_erosion,iterations = 4)
+
+    skeleton = skeletonize(mask_erosion)
+
+    gray_skeleton = cv.cvtColor(skeleton, cv.COLOR_BGR2GRAY)
+
+    dilation = cv.dilate(gray_skeleton.astype('uint8'),kernel_dilation,iterations = 1)
+    borders = original.copy()
+    borders[dilation != 0] = [100,0,255]
+
+
+    return borders
 
 
 net = cv.dnn.readNetFromCaffe(PROTOTXT, CAFFEMODEL)
