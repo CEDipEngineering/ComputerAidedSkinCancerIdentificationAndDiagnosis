@@ -9,6 +9,10 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: metrics.margin,
-        backgroundColor: theme.colors.background,
-    }
+        backgroundColor: theme.colors.white,
+    },
+
+    scroll_view:{
+        width: "100%"
+    },
 })
