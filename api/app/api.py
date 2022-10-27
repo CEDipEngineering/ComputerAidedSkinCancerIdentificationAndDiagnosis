@@ -14,8 +14,8 @@ import io
 import os
 
 
-from app.model import PredictiveModel
-model = PredictiveModel()
+# from app.model import PredictiveModel
+# model = PredictiveModel()
 
 
 app = FastAPI()
@@ -70,18 +70,27 @@ async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
 @app.get("/hed_images/{fn}")
 async def read_file(fn):
     try:
-        print()
-        print(str(API_PREPRO/fn))
-        print()
         try:
             img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
         except: # preprocessing not ready yet
             img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        # prepro = image_preprocessing.red_band_unsharp(img)
+        HED_img = HED_segmentation.HED_segmentation_borders(img)
+        _, encoded_img = cv2.imencode('.jpg', HED_img)
+        return StreamingResponse(io.BytesIO(encoded_img.tobytes()), media_type="image/png")
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found, check your request path")
 
-        print()
-        print(HED_segmentation.__file__)
-        print()
+
+@app.get("/hed_images_zoom/{fn}")
+async def read_file(fn):
+    try:
+        try:
+            img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
+        except: # preprocessing not ready yet
+            img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+
+        h,w,_ = img.shape
+        img = img[int(h/2)-110:int(h/2)+110,int(w/2)-110:int(w/2)+110]
 
         HED_img = HED_segmentation.HED_segmentation_borders(img)
         _, encoded_img = cv2.imencode('.jpg', HED_img)
@@ -92,12 +101,12 @@ async def read_file(fn):
 
 
 
-@app.get("/images/{fn}")
-async def read_file(fn):
-    try:
-        image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        report = model.produce_report(image)
-        return {"report" : report}
-    except Exception:
-        raise HTTPException(status_code=404, detail="File not found, check your request path")
-    return {"prediction": str(pred)}
+# @app.get("/images/{fn}")
+# async def read_file(fn):
+#     try:
+#         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+#         report = model.produce_report(image)
+#         return {"report" : report}
+#     except Exception:
+#         raise HTTPException(status_code=404, detail="File not found, check your request path")
+#     return {"prediction": str(pred)}
