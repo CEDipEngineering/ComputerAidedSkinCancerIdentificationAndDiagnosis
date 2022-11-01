@@ -11,7 +11,7 @@ import { ContainerCheckBox } from '../../components/ContainerCheckBox';
 import { ContainerTextInput } from '../../components/ContainerTextInput';
 import { Button } from "../../components/Button"
 
-import { uploadImage, predictImage } from "../../services/requests/picturePreviewScreen";
+import { uploadImage, predictImage } from "../../services/requests/metadataScreen";
 
 import CancerHistoryImage from "../../assets/cancer_history.png"
 import SkinCancerHistoryImage from "../../assets/skin_cancer_history.png"

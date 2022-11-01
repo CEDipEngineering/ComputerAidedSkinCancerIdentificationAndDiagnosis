@@ -4,11 +4,15 @@ import { View, TouchableOpacity, SafeAreaView, Text} from "react-native";
 import { Camera } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
 
 import { PageHeader } from "../../components/PageHeader"
 import { styles } from "./styles";
 import { theme } from "../../global/styles/theme";
 import { metrics } from "../../global/styles/metrics";
+
+import { uploadImage } from "../../services/requests/metadataScreen";
+import { hedImage } from "../../services/requests/cameraScreen";
 
 export function CameraScreen({navigation}) {
     const camRef = useRef(null)
@@ -17,6 +21,11 @@ export function CameraScreen({navigation}) {
     const [enableFlash, setEnableFlash] = useState(false)
 
     const isFocused = useIsFocused() //enables camera on the right moment
+
+    async function readImageAsBase64(imagePath) {
+    return await FileSystem.readAsStringAsync(
+        imagePath, {encoding: FileSystem.EncodingType.Base64})
+    }
 
     //functions
     function handleFlashMode(flash) {
@@ -27,8 +36,11 @@ export function CameraScreen({navigation}) {
     async function takePicture(camRef) {
         if (camRef) {
             const data = await camRef.current.takePictureAsync()
-            navigation.navigate("PicturePreviewScreen", 
-                {imagePreview: data})
+            const imageToBase64 = await readImageAsBase64(data.uri)
+            const uploadImageResponse = await uploadImage(imageToBase64)
+            const hed = hedImage(uploadImageResponse.data.path)
+            console.log(hed)
+            //navigation.navigate("PicturePreviewScreen", {imagePreview: data})
         }
     }
 
