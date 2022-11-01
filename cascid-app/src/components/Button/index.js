@@ -11,12 +11,14 @@ export function Button({
     textColor,
     extraStyle,
     OnPress,
+    disable,
     loading }) {
     return (
         <TouchableOpacity
             onPress={OnPress}
-            style={[styles.container, extraStyle]}
+            style={disable ? [styles.disableButton, extraStyle] : [styles.container, extraStyle]}
             activeOpacity={0.8}
+            disabled={disable}
         >
             {
                 loading ?
