@@ -28,7 +28,6 @@ export function CameraScreen({navigation}) {
     async function takePicture(camRef) {
         if (camRef) {
             const data = await camRef.current.takePictureAsync()
-            console.log("DATA -> ", data)
             navigation.navigate("PicturePreviewScreen", {imageData: data})
         }
     }

@@ -36,7 +36,9 @@ export function MetadataSceen({navigation, route}) {
   async function sendImage(uuid){
     try {
         setLoading(true)
+        console.log("THERE -> ", imageHedBase64)
         const predictImageResponse = await predictImage(uuid)
+        
         navigation.navigate("ResultsScreen", 
             {   
                 imageUri: imageHedBase64, 

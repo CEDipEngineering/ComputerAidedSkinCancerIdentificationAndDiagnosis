@@ -33,7 +33,6 @@ export function PicturePreviewScreen({navigation, route}){
             setImageHedBase64(hed.data.img_base64.split('\'')[1])
             setUuid(uploadImageResponse.data.path)
         }
-        console.log("THERE IS SMOETHING")
         getHed()
     },[])
 
