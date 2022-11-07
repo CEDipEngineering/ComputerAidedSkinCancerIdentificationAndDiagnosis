@@ -97,7 +97,7 @@ def load_results(path):
     return model, history
 
 def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int]):
-    print("Start execution {}: {}".format(str(path), datetime.now()))
+    print("Start execution {}: \t\t\t{}".format(str(path), datetime.now()))
     # keras.backend.clear_session() # Clear session from previous trainings.
     path.mkdir(exist_ok=True, parents=True)
     # print("Loading train test sets")
@@ -161,18 +161,18 @@ if __name__ == "__main__":
     # ISIC
     
     # ## Hairless
-    # Data = isic_db.get_train_test_images_hairless()
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    Data = isic_db.get_train_test_images_hairless()
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
     
     # ## Raw
-    # Data = isic_db.get_train_test_images_raw()
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    Data = isic_db.get_train_test_images_raw()
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
 
     elapsed = perf_counter() - start
 
@@ -183,3 +183,14 @@ if __name__ == "__main__":
     print("\n"*5)
     print("="*30)
     print("Experiment finished! All models trained and saved! Total runtime was {}h{:02d}min{:.02f}s".format(hour,min,sec))
+
+'''
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet34/aug_hairless:   2022-10-25 12:35:59.756744
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet34/noaug_hairless: 2022-10-26 18:06:30.756710
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet18/aug_hairless:   2022-10-26 20:07:45.857822
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet18/noaug_hairless: 2022-10-28 00:54:28.192219
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet34/aug_raw:        2022-10-28 02:10:45.902154
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet34/noaug_raw:      2022-10-29 07:48:51.101898
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet18/aug_raw:        2022-10-29 09:50:14.053888
+Start execution /home/dell/.cascid_data/experiments/final_isic/resnet18/noaug_raw:      2022-10-30 14:38:50.361574
+'''
