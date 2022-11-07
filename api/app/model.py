@@ -10,8 +10,8 @@ from scipy.stats import entropy
 
 FERNANDO_PATH = config.DATA_DIR / 'experiments' / 'fernando'
 FERNANDO_PATH.mkdir(exist_ok=True, parents=True)
-MODEL_PATH = FERNANDO_PATH / 'models' / 'deep_learning_effnet'
-IMAGE_SHAPE = (300, 300, 3)
+MODEL_PATH = FERNANDO_PATH / 'models' / 'model_resnet34_isic_noreg_aug_raw_rescaling'
+IMAGE_SHAPE = (256, 256, 3)
 
 class PredictiveModel():
 
@@ -20,10 +20,8 @@ class PredictiveModel():
         self.ohe = self.load_ohe()
         
     def load_ohe(self):
-        with open(MODEL_PATH / "one_hot_categories.pkl", "rb") as fl:
-            cat = pickle.load(fl)
-        ohe = OneHotEncoder(sparse=False, categories=cat, handle_unknown="ignore")
-        ohe.fit(np.array(cat[0][0]).reshape(-1, 1))
+        ohe = OneHotEncoder(sparse=False, categories=[np.array(["Cancer", "Not"])], handle_unknown="ignore")
+        ohe.fit(np.array("Cancer").reshape(-1, 1))
         return ohe
 
     def preprocess(self, image : np.ndarray) -> np.ndarray:

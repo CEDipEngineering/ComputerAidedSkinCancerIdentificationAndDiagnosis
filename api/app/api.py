@@ -15,8 +15,8 @@ from PIL import Image
 import os
 
 
-# from app.model import PredictiveModel
-# model = PredictiveModel()
+from app.model import PredictiveModel
+model = PredictiveModel()
 
 
 app = FastAPI()
@@ -106,12 +106,12 @@ async def read_file(fn):
 
 
 
-# @app.get("/images/{fn}")
-# async def read_file(fn):
-#     try:
-#         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-#         report = model.produce_report(image)
-#         return {"report" : report}
-#     except Exception:
-#         raise HTTPException(status_code=404, detail="File not found, check your request path")
-#     return {"prediction": str(pred)}
+@app.get("/images/{fn}")
+async def read_file(fn):
+    try:
+        image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+        report = model.produce_report(image)
+        return {"report" : report}
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found, check your request path")
+    return {"prediction": str(pred)}
