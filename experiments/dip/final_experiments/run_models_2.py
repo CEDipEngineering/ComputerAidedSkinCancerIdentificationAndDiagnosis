@@ -23,10 +23,10 @@ from cascid.configs.config import DATA_DIR
 
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
-EXPERIMENT_DIR = DATA_DIR / 'experiments_2'
-EPOCHS = 2
-BATCH_SIZE = 196
-ES_PATIENCE = 25
+EXPERIMENT_DIR = DATA_DIR / 'experiments_strongaug'
+EPOCHS = 500
+BATCH_SIZE = 200
+ES_PATIENCE = 30
 
 def ResNet(amt_64, amt_128, amt_256, amt_512, augmentation = False):
     # Aurelien Geron, Hands-On Machine Learning with Scikit-Learn, Keras & Tensorflow.
@@ -85,8 +85,8 @@ def ResNet(amt_64, amt_128, amt_256, amt_512, augmentation = False):
     model.add(keras.layers.BatchNormalization())
     model.add(keras.layers.Dense(64, activation="softmax"))
     model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.Dense(32, activation="softmax"))
     model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Dense(32, activation="softmax"))
     model.add(keras.layers.Dense(2, activation="softmax"))
     return model
 
@@ -180,31 +180,44 @@ if __name__ == "__main__":
     # Hairless
     Data = pad_ufes_db.get_train_test_images_hairless()
     run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
     # Raw
-    # Data = pad_ufes_db.get_train_test_images_raw()
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    Data = pad_ufes_db.get_train_test_images_raw()
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    # Raw
+    Data = pad_ufes_db.get_train_test_images_hairless_quantized()
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
 
     # ISIC
     
     # ## Hairless
-    # Data = isic_db.get_train_test_images_hairless()
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    Data = isic_db.get_train_test_images_hairless()
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
     
     # ## Raw
-    # Data = isic_db.get_train_test_images_raw()
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
-    # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    Data = isic_db.get_train_test_images_raw()
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+
+    # ## HQ
+    Data = isic_db.get_train_test_images_hairless_quantized()
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
+    run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
 
     elapsed = perf_counter() - start
 

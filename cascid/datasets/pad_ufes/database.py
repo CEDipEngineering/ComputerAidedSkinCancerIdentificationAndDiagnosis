@@ -13,6 +13,7 @@ from cascid.datasets.pad_ufes import install, images
 
 TRAIN_TEST_CACHE_RAW = pad_ufes_cnf.PAD_UFES_DIR / 'train_test_cache_raw.pkl'
 TRAIN_TEST_CACHE_HAIRLESS = pad_ufes_cnf.PAD_UFES_DIR / 'train_test_cache_hairless.pkl'
+TRAIN_TEST_CACHE_HAIRLESS_QUANT = pad_ufes_cnf.PAD_UFES_DIR / 'train_test_cache_hairless_quant.pkl'
 
 def get_df() -> pd.DataFrame:
     """
@@ -95,6 +96,29 @@ def get_train_test_images_hairless(test_size: float = 0.2, random_state: int = 4
         y=df['diagnostic'].to_numpy().reshape(-1,1)
         x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
         _save_cache(TRAIN_TEST_CACHE_HAIRLESS, x_train, x_test, y_train, y_test)
+        return x_train, x_test, y_train, y_test
+
+def get_train_test_images_hairless_quantized(test_size: float = 0.2, random_state: int = 42, image_shape=(256, 256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Automated caching implementation of sklearn's train_test_split.
+    This function uses preprocessed images (reduced hair) from the dataset, loaded at 256x256, in RGB.
+    Args:
+    test_size: Percent size of test split, if 0.2, 20% of data will be in test, and 80% in training.
+    random_state: Passed directly to train_test_split, random seed to ensure reproducibility.
+
+    Returns:
+    x_train, x_test, y_train, y_test 
+    """
+    try:
+        x_train, x_test, y_train, y_test = _load_cache(TRAIN_TEST_CACHE_HAIRLESS_QUANT)
+        return x_train, x_test, y_train, y_test
+    except FileNotFoundError:
+        df = get_df()
+        x = df['img_id'].apply(lambda x: images.get_hq_image(x, image_shape)).to_numpy()
+        x = np.array([x[i] for i in range(len(x))])
+        y=df['diagnostic'].to_numpy().reshape(-1,1)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=random_state, test_size=test_size)
+        _save_cache(TRAIN_TEST_CACHE_HAIRLESS_QUANT, x_train, x_test, y_train, y_test)
         return x_train, x_test, y_train, y_test
     
 def get_train_test_metadata(test_size: float = 0.2, random_state: int = 42, return_img_id: bool = False):
