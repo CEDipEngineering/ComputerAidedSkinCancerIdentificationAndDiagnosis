@@ -12,7 +12,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Hide tf warnings
 from cascid.datasets.pad_ufes import database as pad_ufes_db
 from cascid.datasets.isic import database as isic_db
 
-from tensorflow import keras, get_logger
+from tensorflow import keras, config
 from keras.models import load_model
 from keras.layers import Input
 from keras.layers import RandomFlip, RandomRotation
@@ -169,7 +169,9 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
     print("End execution {}: {}".format(str(path), enddate))
     print("Total execution time was {}".format(enddate-startdate))
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
+    gpus = config.experimental.list_physical_devices('GPU')
+    config.experimental.set_virtual_device_configuration(gpus[0], [config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 16)]) # 1024MB * 16 = 16GB
     try:
         # Consts
         RESNET18 = (2, 2, 2, 2)

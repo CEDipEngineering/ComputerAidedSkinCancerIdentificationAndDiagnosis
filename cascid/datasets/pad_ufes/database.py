@@ -161,6 +161,8 @@ def get_images_with_no_metadata():
     return images id that were not selected during the training of RFC
     """
     database = get_df()
+
+    database['is_cancer'] = database['diagnostic'].apply(lambda x: 'Not' if x in ['ACK','NEV','SEK'] else 'Cancer')
     
     database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']] = database[['smoke','drink','pesticide','skin_cancer_history','cancer_history','has_piped_water','has_sewage_system','itch','grew','hurt','changed','bleed','elevation','biopsed']].astype("bool")
     
@@ -168,15 +170,13 @@ def get_images_with_no_metadata():
 
     df = df.sort_values('diameter_1', ascending=False).groupby('patient_id').first().reset_index()
     
-    df['is_cancer'] = df['diagnostic'].apply(lambda x: 'Not' if x in ['ACK','NEV','SEK'] else 'Cancer')
-    
     selected_columns = ['patient_id','diagnostic','is_cancer', 'img_id']
 
-    no_metadata_df = no_metadata_df[~database.img_id.isin(df.img_id)]
+    no_metadata_df = database[~database.img_id.isin(df.img_id)]
     
     no_metadata_df = no_metadata_df[selected_columns]
     
-    return no_metadata_df
+    return no_metadata_df.reset_index(drop=True)
 
 if __name__ == "__main__":
     # Test function
