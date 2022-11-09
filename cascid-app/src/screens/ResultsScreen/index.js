@@ -11,7 +11,6 @@ import { theme } from "../../global/styles/theme";
 import { metrics } from "../../global/styles/metrics";
 
 export function ResultsScreen({navigation, route}){
-
     return (
         <SafeAreaView style={styles.container}>
             <PageHeader 
@@ -28,7 +27,7 @@ export function ResultsScreen({navigation, route}){
                         borderColor: theme.colors.primary,
                         borderWidth: 2
                     }}
-                    source={ {uri: route.params.imageUri} }
+                    source={ {uri: 'data:image/jpeg;base64,'+route.params.imageUri} }
                 />
 
                 <View style={styles.tips}>

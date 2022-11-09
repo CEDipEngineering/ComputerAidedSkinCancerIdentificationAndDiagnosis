@@ -5,6 +5,7 @@ import { metrics } from "../../global/styles/metrics";
 import { Dimensions } from 'react-native';
 
 const windowHeight = Dimensions.get('window').height;
+const windowWidth = Dimensions.get('window').width;
 
 export const styles = StyleSheet.create({
     container: {
@@ -16,10 +17,14 @@ export const styles = StyleSheet.create({
         alignItems: "center",
     },
 
+    activityIndicator: {
+        width: "auto",
+        top: windowHeight/2,
+    },
+
     button_content: {
         width: "100%",
         position: "absolute",
-        left: metrics.margin,
         bottom: metrics.margin
     }
 
