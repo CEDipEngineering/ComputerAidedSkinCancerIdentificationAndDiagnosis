@@ -11,11 +11,12 @@ from cascid.configs import hed_cnf
 from cascid.image import image_preprocessing
 from starlette.responses import StreamingResponse
 import io
+from PIL import Image
 import os
 
 
-# from app.model import PredictiveModel
-# model = PredictiveModel()
+from app.model import PredictiveModel
+model = PredictiveModel()
 
 
 app = FastAPI()
@@ -50,7 +51,7 @@ async def test_get():
 
 @app.post("/upload")
 async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
-    image_as_bytes = str.encode(uploadItem.image_to_base64)  # convert string to bytes
+    #image_as_bytes = str.encode(uploadItem.image_to_base64)  # convert string to bytes
     img_recovered = base64.b64decode(bytes(uploadItem.image_to_base64, "utf-8"))  # decode base64string
     try:
         fn = str(uuid.uuid4()) + ".jpg"
@@ -70,16 +71,20 @@ async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
 @app.get("/hed_images/{fn}")
 async def read_file(fn):
     try:
-        try:
-            img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
-        except: # preprocessing not ready yet
-            img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+        # try:
+        #     img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
+        # except: # preprocessing not ready yet
+        img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         HED_img = HED_segmentation.HED_segmentation_borders(img)
-        _, encoded_img = cv2.imencode('.jpg', HED_img)
-        return StreamingResponse(io.BytesIO(encoded_img.tobytes()), media_type="image/png")
-    except Exception:
+        img_to_array = Image.fromarray(HED_img.astype("uint8"))
+        rawBytes = io.BytesIO()
+        img_to_array.save(rawBytes, "JPEG")
+        rawBytes.seek(0)
+        img_base64 = str(base64.b64encode(rawBytes.read()))
+        return {"img_base64": img_base64}
+    except Exception as error:
+        print(error)
         raise HTTPException(status_code=404, detail="File not found, check your request path")
-
 
 @app.get("/hed_images_zoom/{fn}")
 async def read_file(fn):
@@ -101,12 +106,12 @@ async def read_file(fn):
 
 
 
-# @app.get("/images/{fn}")
-# async def read_file(fn):
-#     try:
-#         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-#         report = model.produce_report(image)
-#         return {"report" : report}
-#     except Exception:
-#         raise HTTPException(status_code=404, detail="File not found, check your request path")
-#     return {"prediction": str(pred)}
+@app.get("/images/{fn}")
+async def read_file(fn):
+    try:
+        image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+        report = model.produce_report(image)
+        return {"report" : report}
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found, check your request path")
+    return {"prediction": str(pred)}
