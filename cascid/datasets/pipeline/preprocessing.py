@@ -23,6 +23,9 @@ def preprocess_dataset(dataset: str, prepro: str, image_shape: Tuple[int, int] =
 
     Example:
 
+    # Apply all available forms of preprocessing to pad-ufes, and save images in 512x512 RGB resolution.
+    preprocess_dataset('pad-ufes', 'all', image_shape=(512,512)) 
+
     """
 
     # Case insensitive
