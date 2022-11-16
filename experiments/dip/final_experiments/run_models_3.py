@@ -24,7 +24,7 @@ from cascid.configs.config import DATA_DIR
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
 EXPERIMENT_DIR = DATA_DIR / 'experiments_strongaug'
-EPOCHS = 700
+EPOCHS = 1000
 BATCH_SIZE = 200
 ES_PATIENCE = 100
 
@@ -79,16 +79,16 @@ def ResNet(amt_64, amt_128, amt_256, amt_512, quantized, augmentation = False):
         strides = 1 if filters == prev_filters else 2
         model.add(ResidualUnit(filters, strides=strides))
         prev_filters = filters
-    model.add(keras.layers.SpatialDropout2D(0.3))
+    model.add(keras.layers.SpatialDropout2D(0.35))
     model.add(keras.layers.GlobalAvgPool2D())
     model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dense(128, activation="softmax"))
-    model.add(keras.layers.Dropout(0.2))
+    model.add(keras.layers.Dense(128, activation="relu"))
+    model.add(keras.layers.Dropout(0.25))
     model.add(keras.layers.BatchNormalization())
-    model.add(keras.layers.Dense(64, activation="softmax"))
-    model.add(keras.layers.Dropout(0.2))
+    model.add(keras.layers.Dense(64, activation="relu"))
+    model.add(keras.layers.Dropout(0.25))
     model.add(keras.layers.BatchNormalization())
-    model.add(keras.layers.Dense(32, activation="softmax"))
+    model.add(keras.layers.Dense(32, activation="relu"))
     model.add(keras.layers.Dense(2, activation="softmax"))
     return model
 
@@ -106,7 +106,7 @@ def load_results(path):
     
     return model, history
 
-def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int], do_early_stopping=True, quantized = False):
+def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int], quantized = False):
     startdate = datetime.now()
     print("Start execution {}: {}".format(str(path), startdate))
     # keras.backend.clear_session() # Clear session from previous trainings.
@@ -134,35 +134,22 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
     )
     # model.summary()
 
-    if do_early_stopping:
-        ES = keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            min_delta=0.01,
-            patience=ES_PATIENCE,
-            verbose=0,
-            mode='min',
-            restore_best_weights=True
-        )
+    MC = keras.callbacks.ModelCheckpoint(
+        filepath= str(path / 'checkpoint_epoch{epoch:04d}'),
+        save_best_only = True,
+        monitor='val_loss'
+    )
 
-        # print("training model...")
-        history = model.fit(
-            x_train,
-            y_train,
-            epochs=EPOCHS,
-            batch_size=BATCH_SIZE,
-            validation_split=0.2,
-            verbose=2, # Only show one line per epoch.
-            callbacks=[ES],
-        )
-    else:
-        history = model.fit(
-            x_train,
-            y_train,
-            epochs=EPOCHS,
-            batch_size=BATCH_SIZE,
-            validation_split=0.2,
-            verbose=2, # Only show one line per epoch.
-        )
+    # print("training model...")
+    history = model.fit(
+        x_train,
+        y_train,
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        validation_split=0.2,
+        verbose=2, # Only show one line per epoch.
+        callbacks=[MC],
+    )
 
     dump_results(model, history.history, path)
     enddate = datetime.now()
@@ -171,12 +158,12 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
 
 if __name__ == "__main__":
     gpus = config.experimental.list_physical_devices('GPU')
-    config.experimental.set_virtual_device_configuration(gpus[0], [config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 16)]) # 1024MB * 16 = 16GB
+    config.experimental.set_virtual_device_configuration(gpus[0], [config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 14)]) # 1024MB * 16 = 16GB
     try:
         # Consts
         RESNET18 = (2, 2, 2, 2)
         RESNET34 = (3, 4, 6, 3)
-        LEARNING_RATE = 0.0001
+        LEARNING_RATE = 0.00001
         
         start = perf_counter()
     
@@ -217,10 +204,10 @@ if __name__ == "__main__":
 
         ## HQ
         Data = isic_db.get_train_test_images_hairless_quantized()
-        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
+        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
     finally:
         # Log time spent
         elapsed = perf_counter() - start
