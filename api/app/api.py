@@ -66,14 +66,9 @@ async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
     
     return {"path": fn} 
 
-
-
 @app.get("/hed_images/{fn}")
 async def read_file(fn):
     try:
-        # try:
-        #     img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
-        # except: # preprocessing not ready yet
         img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         HED_img = HED_segmentation.HED_segmentation_borders(img)
         img_to_array = Image.fromarray(HED_img.astype("uint8"))
@@ -89,25 +84,29 @@ async def read_file(fn):
 @app.get("/hed_images_zoom/{fn}")
 async def read_file(fn):
     try:
-        try:
-            img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
-        except: # preprocessing not ready yet
-            img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-
+        img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         h,w,_ = img.shape
         img = img[int(h/2)-110:int(h/2)+110,int(w/2)-110:int(w/2)+110]
 
         HED_img = HED_segmentation.HED_segmentation_borders(img)
-        _, encoded_img = cv2.imencode('.jpg', HED_img)
-        return StreamingResponse(io.BytesIO(encoded_img.tobytes()), media_type="image/png")
-
+        img_to_array = Image.fromarray(HED_img.astype("uint8"))
+        rawBytes = io.BytesIO()
+        img_to_array.save(rawBytes, "JPEG")
+        rawBytes.seek(0)
+        img_base64 = str(base64.b64encode(rawBytes.read()))
+        return {"img_base64": img_base64}
     except Exception:
         raise HTTPException(status_code=404, detail="File not found, check your request path")
 
-
-
 @app.get("/images/{fn}")
-async def read_file(fn):
+async def read_file(fn, 
+    smoke: bool,
+    drink: bool,
+    pesticide: bool,
+    cancer_history: bool,
+    skin_cancer_history: bool,
+    age: int
+    ):
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         report = model.produce_report(image)
