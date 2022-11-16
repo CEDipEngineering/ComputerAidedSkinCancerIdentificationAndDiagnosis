@@ -6,7 +6,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Hide tf warnings
 from cascid.datasets.pad_ufes import database as pad_ufes_db
 from cascid.datasets.isic import database as isic_db
 
-def train_test_split(dataset: str, prepro: str, test_size: float = 0.2, random_state: int = 42, image_shape: Tuple[int, int] = (256,256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def train_test_split(dataset: str, prepro: str = "raw", test_size: float = 0.2, random_state: int = 42, image_shape: Tuple[int, int] = (256,256)) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Function wrapper to load train test split for either dataset with any of the 3 available preprocessing types.
 

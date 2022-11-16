@@ -111,7 +111,7 @@ def get_hq_image(img_name: str, image_shape: Tuple[int, int] = None):
     print("\n"*3)
     raise FileNotFoundError("Supplied image does not have a preprocessed file, read above error")
 
-def remove_hair(img_list: List[str]) -> None:
+def remove_hair(img_list: List[str], image_shape: Tuple[int, int] = (512,512)) -> None:
     """
     Preprocessing function, used to remove hair from list of images, and save preprocessed results in isic_cnf.HAIRLESS_DIR.
     Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
@@ -127,8 +127,12 @@ def remove_hair(img_list: List[str]) -> None:
     target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
     # Arg 3
     func = np.array(list(repeat(adaptive_hair_removal,len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 4
+    width = np.array(list(repeat(image_shape[0],len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 5
+    height = np.array(list(repeat(image_shape[1],len(orig_names))), dtype=object).reshape(-1,1)
     # Stack into list
-    args = np.hstack([orig_names, target_names, func])
+    args = np.hstack([orig_names, target_names, func, width, height])
     # Run
     print("Beginning transformations, this may take a while...")
     start = time.perf_counter()
@@ -139,7 +143,7 @@ def remove_hair(img_list: List[str]) -> None:
     seconds=float((elapsed%3600)%60)
     print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
 
-def remove_hair_and_quantize(img_list: List[str]) -> None:
+def remove_hair_and_quantize(img_list: List[str], image_shape: Tuple[int, int] = (512,512)) -> None:
     """
     Preprocessing function, used to remove hair from list of images, and save preprocessed results in isic_cnf.HAIRLESS_QUANTIZED_DIR.
     Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
@@ -156,8 +160,12 @@ def remove_hair_and_quantize(img_list: List[str]) -> None:
     target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
     # Arg 3
     func = np.array(list(repeat(remove_and_quantize,len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 4
+    width = np.array(list(repeat(image_shape[0],len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 5
+    height = np.array(list(repeat(image_shape[1],len(orig_names))), dtype=object).reshape(-1,1)
     # Stack into list
-    args = np.hstack([orig_names, target_names, func])
+    args = np.hstack([orig_names, target_names, func, width, height])
     # Run
     print("Beginning transformations, this may take a while...")
     start = time.perf_counter()
@@ -185,7 +193,7 @@ def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = c
         results = pool.starmap(transform, args)
     return results
 
-def _process_and_save(img_name: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
+def _process_and_save(img_name: str, target_path: str, transform: Callable, image_width: int, image_height: int, *, force_transform: bool= False) -> None:
     """
     Function to apply processing to images, and save results.
     Args:
@@ -200,7 +208,7 @@ def _process_and_save(img_name: str, target_path: str, transform: Callable, *, f
             # print(target_path, "exists")
             return True
     # print("called with {}".format(img_name))
-    img = images.get_raw_image(img_name, (512,512))
+    img = images.get_raw_image(img_name, (image_width, image_height))
     processed = transform(img)
     ret = cv2.imwrite(str(target_path), processed)
     return ret
