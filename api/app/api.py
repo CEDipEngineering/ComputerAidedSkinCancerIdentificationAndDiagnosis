@@ -107,9 +107,21 @@ async def read_file(fn,
     skin_cancer_history: bool,
     age: int
     ):
+
+    # ['smoke', 'drink', 'skin_cancer_history', 'cancer_history', 'age','pesticide'] Use in this order
+
+    metadata = [
+        int(smoke),
+        int(drink),
+        int(skin_cancer_history),
+        int(cancer_history),
+        age,
+        int(pesticide)
+    ]
+
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        report = model.produce_report(image)
+        report = model.produce_report(image, metadata)
         return {"report" : report}
     except Exception:
         raise HTTPException(status_code=404, detail="File not found, check your request path")

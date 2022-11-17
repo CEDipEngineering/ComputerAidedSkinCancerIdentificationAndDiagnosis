@@ -37,7 +37,7 @@ class PredictiveModel():
     def _certainty(self, pred: np.ndarray):
         return entropy(pred)
     
-    def produce_report(self, image: np.ndarray) -> Dict:
+    def produce_report(self, image: np.ndarray, metadata: np.array) -> Dict:
         image_resized = self.preprocess(image)
         pred_proba = self._predict_proba(image_resized)
         pred_class = self.ohe.inverse_transform(pred_proba)[0][0]
@@ -55,7 +55,8 @@ if __name__ == "__main__":
     pm = PredictiveModel()
     print(pm.model.summary())
     image = cv2.cvtColor(cv2.imread(str(pad_ufes_cnf.IMAGES_DIR / "PAT_1842_3615_850.png")), cv2.COLOR_BGR2RGB)
+    metadata = np.array([1, 0, 0, 0, 35, 0]) # Random example
     # print(f"{image.shape=}")
-    print(pm.produce_report(image))
+    print(pm.produce_report(image, metadata))
 
     
