@@ -23,6 +23,8 @@ import { metrics } from '../../global/styles/metrics';
 
 export function MetadataSceen({navigation, route}) {
 
+  const {uuid, imageHedBase64} = route.params
+
   const [loading, setLoading] = useState(false)
   const [smoke, setSmoke] = useState(false);
   const [drink, setDrink] = useState(false);
@@ -31,27 +33,15 @@ export function MetadataSceen({navigation, route}) {
   const [skinCancerHistory, setSkinCancerHistory] = useState(false);
   const [age, setAge] = useState(null);
 
-  async function readImageAsBase64(imagePath) {
-    return await FileSystem.readAsStringAsync(
-        imagePath, {encoding: FileSystem.EncodingType.Base64})
-  }
-
-  async function sendImage(imagePath){
+  async function sendImage(uuid){
     try {
         setLoading(true)
-        const imageToBase64 = await readImageAsBase64(imagePath)
-        const uploadImageResponse = await uploadImage(imageToBase64, {
-          "smoke": smoke,
-          "drink": drink,
-          "pesticide": pesticide,
-          "cancer_history": cancerHistory,
-          "skin_cancer_history": skinCancerHistory,
-          "age": age
-        })
-        const predictImageResponse = await predictImage(uploadImageResponse.data.path)
+        console.log("THERE -> ", imageHedBase64)
+        const predictImageResponse = await predictImage(uuid)
+        
         navigation.navigate("ResultsScreen", 
             {   
-                imageUri: imagePath, 
+                imageUri: imageHedBase64, 
                 prediction: predictImageResponse.data.report
             })
         setLoading(false)
@@ -120,9 +110,9 @@ export function MetadataSceen({navigation, route}) {
         <Button 
             text={"continue"}
             textColor={theme.colors.white}
-            OnPress={()=> sendImage(route.params.imageUri)}
+            OnPress={()=> sendImage(uuid)}
             loading={loading}
-            disable={age.length == 0}
+            disable={age <= 0}
             extraStyle={{
               marginVertical: metrics.margin
         }}/>

@@ -1,9 +1,7 @@
 
 # Native imports
-from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import time
 from multiprocessing import cpu_count
 from typing import Callable, List
 
@@ -13,9 +11,7 @@ import cv2
 # from tqdm import tqdm
 
 # Cascid imports
-from cascid.datasets.pad_ufes import database, images
-from cascid.configs import pad_ufes_cnf
-from cascid.image.image_preprocessing import adaptive_hair_removal
+from cascid.datasets.pad_ufes import images
 
 def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = cpu_count()//2) -> List:
     """
@@ -58,36 +54,3 @@ def _process_and_save(img_name: str, target_path: str, transform: Callable, *, f
     processed = transform(img)
     ret = cv2.imwrite(str(target_path), processed)
     return ret
-
-def remove_hair(img_list: List[str]) -> None:
-    """
-    Preprocessing function, used to remove hair from list of images, and save preprocessed results in pad_ufes_cnf.HAIRLESS_DIR.
-    Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
-    Calling this function repeatedly with a single image on the list will result in extremely slow performance.
-
-    Args:
-    img_list: List of strings of image names, as found in metadata, such as ['PAT_2046_4323_394.png'].
-    """
-    prepend_output_dir = lambda x: str(pad_ufes_cnf.HAIRLESS_DIR / x)
-    # Arg 1
-    orig_names = np.array(img_list).reshape(-1,1)
-    # Arg 2
-    target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
-    # Arg 3
-    func = np.array(list(repeat(adaptive_hair_removal,len(orig_names))), dtype=object).reshape(-1,1)
-    # Stack into list
-    args = np.hstack([orig_names, target_names, func])
-    # Run
-    print("Beginning transformations, this may take a while...")
-    start = time.perf_counter()
-    result = _apply_params_async(_process_and_save, args, nthreads=8)
-    elapsed = time.perf_counter()-start
-    hour=int(elapsed//3600)
-    minute=int((elapsed%3600)//60)
-    seconds=float((elapsed%3600)%60)
-    print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
-
-if __name__ == "__main__":
-    df = database.get_df()
-    img_names = df['img_id'].to_list()
-    remove_hair(img_names)

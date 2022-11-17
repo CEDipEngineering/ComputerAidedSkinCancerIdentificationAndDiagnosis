@@ -84,3 +84,45 @@ def HED_segmentation_borders(original):
 
 net = cv.dnn.readNetFromCaffe(PROTOTXT, CAFFEMODEL)
 cv.dnn_registerLayer('Crop', CropLayer)
+
+
+
+def hed_find_bounding_box_square(original):
+    '''
+    Finds squared bounding box based on HED segmentation
+    Argument: 
+        - Original image - suggested size 300x300
+    Returns:
+        - Original image with bounding box, ROI
+
+    Example:
+    original, ROI = hed_find_bounding_box_square(original)
+    '''
+
+    img = apply_HED(original)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    thresh = cv.threshold(gray, 0, 255, cv.THRESH_OTSU)[1]
+    cnts = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    width,height = thresh.shape
+    ROI_limit = 2*width/30
+    size_limit = 2*width/30
+    lesion_cnts = []
+    for c in cnts:
+        x,y,w,h = cv.boundingRect(c)
+        # Center restrictions
+        if (x > ROI_limit and x < width-ROI_limit) and (y > ROI_limit and y < height-ROI_limit): 
+            # Size restrictions
+            if (h > size_limit and w > size_limit):
+                lesion_cnts.append(((x,y,w,h), w*h))
+
+    if len(lesion_cnts)>0:   
+        biggest_cnt = sorted(lesion_cnts, key=lambda c: c[1], reverse=True)[0]
+        x,y,w,h = biggest_cnt[0]
+        max_size=h
+        if w>h:
+            max_size = w  
+        cv.rectangle(original, (x, y), (x + max_size, y + max_size), (36,255,12), 2)
+        ROI = original[y:y+max_size, x:x+max_size]
+
+        return original, ROI
