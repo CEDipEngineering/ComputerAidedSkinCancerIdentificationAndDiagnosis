@@ -123,6 +123,6 @@ async def read_file(fn,
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         report = model.produce_report(image, metadata)
         return {"report" : report}
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=404, detail="File not found, check your request path")
-    return {"prediction": str(pred)}

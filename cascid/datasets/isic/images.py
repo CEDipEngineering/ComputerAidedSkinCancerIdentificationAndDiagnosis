@@ -13,12 +13,9 @@ import os
 from cascid.configs import isic_cnf
 from cascid.datasets.isic import database, fetcher, images
 from cascid.image.image_preprocessing import adaptive_hair_removal
-from cascid.image.image_preprocessing import adaptive_hair_removal2, color_quantization
+from cascid.image.image_preprocessing import remove_and_quantize
 
 _warning_load_image_without_shape = False
-
-def remove_and_quantize(img):
-    return color_quantization(adaptive_hair_removal2(img))
 
 def _load_image(img_name: str, prefix: Path, shape: Tuple[int, int] = None) -> np.ndarray:
     global _warning_load_image_without_shape
