@@ -14,7 +14,12 @@ from cascid.datasets.pad_ufes import database, images
 from cascid.image.image_preprocessing import adaptive_hair_removal
 import os
 
+from cascid.image.image_preprocessing import adaptive_hair_removal2, color_quantization
+
 _warning_load_image_without_shape = False
+
+def _remove_and_quantize(img):
+    return color_quantization(adaptive_hair_removal2(img))
 
 def _load_image(img_name: str, prefix: Path, shape: Tuple[int, int] = None) -> np.ndarray:
     global _warning_load_image_without_shape
@@ -76,7 +81,66 @@ def get_hairless_image(img_name: str, image_shape: Tuple[int, int] = None):
     print("\n"*3)
     raise FileNotFoundError("Supplied image does not have a preprocessed file, read above error")
 
-def remove_hair(img_list: List[str]) -> None:
+def get_hq_image(img_name: str, image_shape: Tuple[int, int] = None):
+    """
+    ## Function used to read preprocessed image from disk. Used to abstract directory structure from user.
+    
+    Args:
+    - img_name: string, as found in 'img_id' column in metadata, such as 'PAT_2046_4323_394.png'.
+    - image_shape: Tuple of two integers, size of image array output. Defaults to (128, 128).
+
+    Raises: FileNotFoundError if img_name has not been preprocessed yet
+
+    Example:
+
+    ## Load first image from dataset:    
+    df = datasets.pad_ufes.database.get_df() # Get metadata
+    
+    img_raw = get_hairless_image(df.iloc[0]['img_id'], (128, 128)) # Get first image hq 
+
+    """
+    if (pad_ufes_cnf.HAIRLESS_QUANTIZED_DIR / img_name).exists():
+        return _load_image(img_name, pad_ufes_cnf.HAIRLESS_QUANTIZED_DIR, image_shape)
+    print("Supplied image name '{}' has no preprocessed file found".format(img_name))
+    print("Please, apply preprocessing to all images that will be used beforehand")
+    print("Preprocessing a list of images can be done using cascid.image.apply_preprocessing.remove_hair(img_list)")
+    print("\n"*3)
+    raise FileNotFoundError("Supplied image does not have a preprocessed file, read above error")
+
+def remove_hair_and_quantize(img_list: List[str], image_shape: Tuple[int, int] = (512,512)) -> None:
+    """
+    Preprocessing function, used to remove hair from list of images, and save preprocessed results in pad_ufes_cnf.HAIRLESS_QUANTIZED_DIR.
+    Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
+    Calling this function repeatedly with a single image on the list will result in extremely slow performance.
+
+    Args:
+    img_list: List of strings of image names, as found in metadata, such as ['PAT_2046_4323_394.png'].
+    """
+
+    prepend_output_dir = lambda x: str(pad_ufes_cnf.HAIRLESS_QUANTIZED_DIR / x)
+    # Arg 1
+    orig_names = np.array(img_list).reshape(-1,1)
+    # Arg 2
+    target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
+    # Arg 3
+    func = np.array(list(repeat(_remove_and_quantize,len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 4
+    width = np.array(list(repeat(image_shape[0],len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 5
+    height = np.array(list(repeat(image_shape[1],len(orig_names))), dtype=object).reshape(-1,1)
+    # Stack into list
+    args = np.hstack([orig_names, target_names, func, width, height])
+    # Run
+    print("Beginning transformations, this may take a while...")
+    start = time.perf_counter()
+    result = _apply_params_async(_process_and_save, args, nthreads=8)
+    elapsed = time.perf_counter()-start
+    hour=int(elapsed//3600)
+    minute=int((elapsed%3600)//60)
+    seconds=float((elapsed%3600)%60)
+    print("Finished transformations after {:d}h{:02d}min{:.02f}s".format(hour,minute,seconds))
+
+def remove_hair(img_list: List[str], image_shape: Tuple[int, int] = (512,512)) -> None:
     """
     Preprocessing function, used to remove hair from list of images, and save preprocessed results in pad_ufes_cnf.HAIRLESS_DIR.
     Warning, this processing is done with mutiple threads, and as such should be done with larger numbers of images. 
@@ -92,8 +156,12 @@ def remove_hair(img_list: List[str]) -> None:
     target_names = np.array([prepend_output_dir(i) for i in img_list]).reshape(-1,1)
     # Arg 3
     func = np.array(list(repeat(adaptive_hair_removal,len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 4
+    width = np.array(list(repeat(image_shape[0],len(orig_names))), dtype=object).reshape(-1,1)
+    # Arg 5
+    height = np.array(list(repeat(image_shape[1],len(orig_names))), dtype=object).reshape(-1,1)
     # Stack into list
-    args = np.hstack([orig_names, target_names, func])
+    args = np.hstack([orig_names, target_names, func, width, height])
     # Run
     print("Beginning transformations, this may take a while...")
     start = time.perf_counter()
@@ -120,7 +188,7 @@ def _apply_params_async(transform: Callable, args: np.ndarray, nthreads: int = c
         results = pool.starmap(transform, args)
     return results
 
-def _process_and_save(img_name: str, target_path: str, transform: Callable, *, force_transform: bool= False) -> None:
+def _process_and_save(img_name: str, target_path: str, transform: Callable, image_width: int, image_height: int, *, force_transform: bool= False) -> None:
     """
     Function to apply processing to images, and save results.
     Args:
@@ -135,7 +203,7 @@ def _process_and_save(img_name: str, target_path: str, transform: Callable, *, f
             # print(target_path, "exists")
             return True
     # print("called with {}".format(img_name))
-    img = images.get_raw_image(img_name, (512,512))
+    img = images.get_raw_image(img_name, (image_width, image_height))
     processed = transform(img)
     ret = cv2.imwrite(str(target_path), processed)
     return ret
