@@ -45,7 +45,6 @@ class PredictiveModel():
         out = {
             "Diagnosis" : pred_class,
             "Entropy" : pred_entropy,
-            "Classes" : self.ohe.categories_,
             "Raw Prediction": ";".join(map(lambda x: f"{x:.02f}", pred_proba[0]))
         }
         print(out)

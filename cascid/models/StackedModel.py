@@ -4,7 +4,7 @@ import numpy as np
 
 #tensorflow and keras
 from tensorflow import keras
-from keras.utils import load_img, img_to_array
+from tensorflow.keras.utils import load_img, img_to_array
 from keras.models import load_model, Model
 
 #sklearn
