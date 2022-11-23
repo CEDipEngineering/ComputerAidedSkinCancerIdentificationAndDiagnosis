@@ -24,7 +24,7 @@ from cascid.configs.config import DATA_DIR
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
 EXPERIMENT_DIR = DATA_DIR / 'experiments_fine_tuning'
-EPOCHS = 5
+EPOCHS = 300
 BATCH_SIZE = 200
 
 def ResNet(amt_64, amt_128, amt_256, amt_512, quantized, augmentation = False):
