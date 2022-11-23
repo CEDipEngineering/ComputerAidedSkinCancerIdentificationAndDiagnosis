@@ -23,7 +23,7 @@ from cascid.configs.config import DATA_DIR
 
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
-EXPERIMENT_DIR = DATA_DIR / 'experiments_strongaug'
+EXPERIMENT_DIR = DATA_DIR / 'experiments_final'
 EPOCHS = 1000
 BATCH_SIZE = 200
 ES_PATIENCE = 100
@@ -189,8 +189,8 @@ if __name__ == "__main__":
 
         # ISIC
         ## Hairless
-        # Data = isic_db.get_train_test_images_hairless()
-        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+        Data = isic_db.get_train_test_images_hairless()
+        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
@@ -203,8 +203,8 @@ if __name__ == "__main__":
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
 
         ## HQ
-        Data = isic_db.get_train_test_images_hairless_quantized()
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
+        # Data = isic_db.get_train_test_images_hairless_quantized()
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
