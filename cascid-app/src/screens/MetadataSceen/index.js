@@ -36,8 +36,15 @@ export function MetadataSceen({navigation, route}) {
   async function sendImage(uuid){
     try {
         setLoading(true)
-        console.log("THERE -> ", imageHedBase64)
-        const predictImageResponse = await predictImage(uuid)
+        const metadata = {
+          "smoke": smoke,
+          "drink": drink,
+          "pesticide": pesticide,
+          "cancer_history": cancerHistory,
+          "skin_cancer_history": skinCancerHistory,
+          "age": age
+        }
+        const predictImageResponse = await predictImage(uuid, metadata)
         
         navigation.navigate("ResultsScreen", 
             {   

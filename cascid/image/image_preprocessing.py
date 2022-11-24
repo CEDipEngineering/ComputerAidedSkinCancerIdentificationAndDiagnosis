@@ -573,3 +573,6 @@ def wiener_filter(gray,k=3):
     kernel = (k,k)
     filtered_img = wiener(gray, kernel) 
     return filtered_img
+
+def remove_and_quantize(img):
+    return color_quantization(adaptive_hair_removal2(img))
