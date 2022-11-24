@@ -6,8 +6,8 @@ export async function uploadImage(base64, metadata){
     )
 }
 
-export async function predictImage(uuid){
-    return api.get(`images/${uuid}`).then(
+export async function predictImage(uuid, metadata){
+    return api.get(`images/${uuid}`, {params: metadata}).then(
         response => {return response}
     )
 }

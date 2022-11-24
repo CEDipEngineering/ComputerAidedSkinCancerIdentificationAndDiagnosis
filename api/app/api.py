@@ -1,22 +1,23 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 import uuid
 import base64
-from cascid.configs import config
 import cv2
 from pydantic import BaseModel
-from cascid.image import HED_segmentation, image_preprocessing
 from fastapi.responses import Response
 import numpy as np
-from cascid.configs import hed_cnf
-from cascid.image import image_preprocessing
 from starlette.responses import StreamingResponse
 import io
 from PIL import Image
 import os
 
+from cascid.configs import hed_cnf
+from cascid.image import image_preprocessing
+from cascid.configs.config import DATA_DIR
+from cascid.image import HED_segmentation, image_preprocessing
+from cascid.configs import config
 
 from app.model import PredictiveModel
-model = PredictiveModel()
+model = PredictiveModel(path = DATA_DIR / 'final_models' / 'stacked_01')
 
 
 app = FastAPI()
@@ -66,14 +67,9 @@ async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
     
     return {"path": fn} 
 
-
-
 @app.get("/hed_images/{fn}")
 async def read_file(fn):
     try:
-        # try:
-        #     img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
-        # except: # preprocessing not ready yet
         img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         HED_img = HED_segmentation.HED_segmentation_borders(img)
         img_to_array = Image.fromarray(HED_img.astype("uint8"))
@@ -89,29 +85,47 @@ async def read_file(fn):
 @app.get("/hed_images_zoom/{fn}")
 async def read_file(fn):
     try:
-        try:
-            img = cv2.cvtColor(cv2.imread(str(API_PREPRO/fn)), cv2.COLOR_BGR2RGB)
-        except: # preprocessing not ready yet
-            img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-
+        print("HERE")
+        img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         h,w,_ = img.shape
-        img = img[int(h/2)-110:int(h/2)+110,int(w/2)-110:int(w/2)+110]
-
+        circle_width = int( h*0.2)
+        img = img[int(h/2) - circle_width : int(h/2) + circle_width, int(w/2) - circle_width : int(w/2) + circle_width]
         HED_img = HED_segmentation.HED_segmentation_borders(img)
-        _, encoded_img = cv2.imencode('.jpg', HED_img)
-        return StreamingResponse(io.BytesIO(encoded_img.tobytes()), media_type="image/png")
-
-    except Exception:
+        img_to_array = Image.fromarray(HED_img.astype("uint8"))
+        rawBytes = io.BytesIO()
+        img_to_array.save(rawBytes, "JPEG")
+        rawBytes.seek(0)
+        img_base64 = str(base64.b64encode(rawBytes.read()))
+        return {"img_base64": img_base64}
+    except Exception as error:
+        print(error)
         raise HTTPException(status_code=404, detail="File not found, check your request path")
-
-
 
 @app.get("/images/{fn}")
-async def read_file(fn):
+async def read_file(fn, 
+    smoke: bool,
+    drink: bool,
+    pesticide: bool,
+    cancer_history: bool,
+    skin_cancer_history: bool,
+    age: int
+    ):
+
+    # ['smoke', 'drink', 'skin_cancer_history', 'cancer_history', 'age','pesticide'] Use in this order
+
+    metadata = [[
+        int(smoke),
+        int(drink),
+        int(skin_cancer_history),
+        int(cancer_history),
+        age,
+        int(pesticide)
+    ]]
+
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
-        report = model.produce_report(image)
+        report = model.produce_report(image, metadata)
         return {"report" : report}
-    except Exception:
+    except Exception as e:
+        print("THERE ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", e)
         raise HTTPException(status_code=404, detail="File not found, check your request path")
-    return {"prediction": str(pred)}
