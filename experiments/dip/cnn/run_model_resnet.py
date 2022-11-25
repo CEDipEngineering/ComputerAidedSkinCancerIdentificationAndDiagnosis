@@ -24,8 +24,8 @@ from cascid.configs.config import DATA_DIR
 
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
-EXPERIMENT_DIR = DATA_DIR / 'cnn_bin'
-EPOCHS = 500
+EXPERIMENT_DIR = DATA_DIR / 'transf_1_bin'
+EPOCHS = 300
 BATCH_SIZE = 128
 
 def dump_results(model, history, path):
@@ -61,21 +61,17 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
     # print("y_test shape: {0}".format(y_test.shape))
 
     # print("creating model...")
+    feature_extractor = ResNet50(
+        weights='imagenet', 
+        input_shape=IMAGE_SIZE,
+        include_top=False #whether to include the fully-connected layer at the top of the network.
+    )
+    feature_extractor.trainable = False
     model = keras.models.Sequential()
-    model.add(keras.layers.Input(IMAGE_SIZE))
-    model.add(keras.layers.Conv2D(64, kernel_size=(7, 7), activation='relu'))
-    model.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.Conv2D(32, kernel_size=(5, 5), activation='relu'))
-    model.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.Conv2D(16, kernel_size=(3, 3), activation='relu'))
-    model.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dense(128, activation='relu'))
-    model.add(keras.layers.Dense(64, activation='relu'))
+    model.add(feature_extractor)
+    model.add(keras.layers.GlobalAveragePooling2D())
     model.add(keras.layers.Dense(2, activation='softmax'))
+    # model.add(keras.layers.Input(IMAGE_SIZE))
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
         loss=keras.losses.BinaryCrossentropy(),
