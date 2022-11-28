@@ -36,13 +36,17 @@ class UploadItem(BaseModel):
     image_to_base64: str
 
 
-def preprocess_img(fn : str):
-    img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)[:,:,::-1]
-    processed = image_preprocessing.adaptive_hair_removal2(img)
+def preprocess_img(img, fn):
+    #path= "/home/fernandofincatti/Pictures/test-hair-removal.jpeg"
+    #img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    processed = image_preprocessing.remove_black_hairs_hessian(img)
     _, encoded_img = cv2.imencode('.JPG', processed)
     
     with open(API_PREPRO / fn, "wb") as f:
         f.write(encoded_img)
+    return cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
+
 
 
 @app.get("/")
@@ -59,7 +63,7 @@ async def upload(uploadItem: UploadItem, background_tasks: BackgroundTasks):
         with open(API_DATA / fn, "wb") as f:
             f.write(img_recovered)
         db.append(fn)
-        background_tasks.add_task(preprocess_img, fn)
+        #background_tasks.add_task(preprocess_img, fn)
 
     except Exception as e:
         print(e)
@@ -85,12 +89,15 @@ async def read_file(fn):
 @app.get("/hed_images_zoom/{fn}")
 async def read_file(fn):
     try:
-        print("HERE")
+        
         img = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
         h,w,_ = img.shape
         circle_width = int( h*0.2)
         img = img[int(h/2) - circle_width : int(h/2) + circle_width, int(w/2) - circle_width : int(w/2) + circle_width]
-        HED_img = HED_segmentation.HED_segmentation_borders(img)
+        img = cv2.resize(img, (300,300))
+        cv2.imwrite(str(API_PREPRO /"original.jpeg"), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        img_hariless = preprocess_img(img, fn)
+        HED_img = HED_segmentation.HED_segmentation_borders(img_hariless)
         img_to_array = Image.fromarray(HED_img.astype("uint8"))
         rawBytes = io.BytesIO()
         img_to_array.save(rawBytes, "JPEG")
@@ -124,8 +131,9 @@ async def read_file(fn,
 
     try:
         image = cv2.cvtColor(cv2.imread(str(API_DATA/fn)), cv2.COLOR_BGR2RGB)
+        #,img_hariless = preprocess_img(image)
         report = model.produce_report(image, metadata)
         return {"report" : report}
     except Exception as e:
-        print("THERE ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", e)
+        print(e)
         raise HTTPException(status_code=404, detail="File not found, check your request path")
