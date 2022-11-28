@@ -426,6 +426,28 @@ def unsharp_masking(img):
     sharp = gray - 0.7*lap
     return sharp
 
+def unsharp_masking_color(img):
+    '''
+    Function that uses an intermediate LAB colorspace to apply unsharp masking to colored images
+    Arguments: 
+        - img: Original image 
+    Returns:
+        - Preprocessed image (sharpened)    
+    '''
+    
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l_channel, a, b = cv2.split(lab)
+
+    gray_mf = median_filter(l_channel, 1)
+    lap = cv2.Laplacian(gray_mf,cv2.CV_64F)
+    cl = l_channel - 0.7*lap
+
+    limg = cv2.merge((cl.astype(np.uint8), a, b))
+    enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    
+    return enhanced_img
+    
+
 def red_band_unsharp(img):
     '''
     Function to enhance contrast based on Laplacian filter 
@@ -551,3 +573,6 @@ def wiener_filter(gray,k=3):
     kernel = (k,k)
     filtered_img = wiener(gray, kernel) 
     return filtered_img
+
+def remove_and_quantize(img):
+    return color_quantization(adaptive_hair_removal2(img))

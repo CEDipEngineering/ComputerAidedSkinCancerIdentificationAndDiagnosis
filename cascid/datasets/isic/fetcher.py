@@ -82,7 +82,7 @@ def fetch_from_isic(n_samples: int, diagnosis_list: List[str]) -> List[LesionIma
             out = _fetch(isic_cnf.SEARCH_URL, params=params)
             next_urls[diagnosis] = out["next"]
             lesion_image_list += out["lesion_image_list"]
-        print("{:04d} images left...\r".format(n_samples), end="\r")        
+        print("{:04d} images left...\r".format(n_samples), end="")        
         while (n_samples//100) > 0:
             n_samples -= 100
             # For each requested diagnosis, collect 100 more

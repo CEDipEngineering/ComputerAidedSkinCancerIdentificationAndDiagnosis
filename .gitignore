@@ -155,3 +155,4 @@ experiments/dip/multiclass_cnn
 *.png
 *.pdf
 *.jpeg
+*.out
