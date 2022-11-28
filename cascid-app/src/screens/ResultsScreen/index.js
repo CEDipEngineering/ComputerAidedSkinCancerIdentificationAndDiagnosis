@@ -36,11 +36,11 @@ export function ResultsScreen({navigation, route}){
                         title={"Diagnostic"}
                         text={route.params.prediction.Diagnosis}
                     />
-                    <Tip 
+                    {/* <Tip 
                         Icon={() => <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={30} color={theme.colors.primary} />}
                         title={"Confidence"}
                         text={"21%"}
-                    />
+                    /> */}
                 </View>
             </View>
             <View style={styles.button_content}>
