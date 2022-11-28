@@ -26,7 +26,7 @@ IMAGE_SIZE = (256,256,3)
 EXPERIMENT_DIR = DATA_DIR / 'experiments_strongaug'
 EPOCHS = 700
 BATCH_SIZE = 200
-ES_PATIENCE = 100
+ES_PATIENCE = 50
 
 def ResNet(amt_64, amt_128, amt_256, amt_512, quantized, augmentation = False):
     # Aurelien Geron, Hands-On Machine Learning with Scikit-Learn, Keras & Tensorflow.
@@ -171,7 +171,7 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
 
 if __name__ == "__main__":
     gpus = config.experimental.list_physical_devices('GPU')
-    config.experimental.set_virtual_device_configuration(gpus[0], [config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 16)]) # 1024MB * 16 = 16GB
+    config.experimental.set_virtual_device_configuration(gpus[0], [config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 14)]) # 1024MB * 16 = 16GB
     try:
         # Consts
         RESNET18 = (2, 2, 2, 2)
@@ -217,10 +217,10 @@ if __name__ == "__main__":
 
         ## HQ
         Data = isic_db.get_train_test_images_hairless_quantized()
-        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
+        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
     finally:
         # Log time spent
         elapsed = perf_counter() - start

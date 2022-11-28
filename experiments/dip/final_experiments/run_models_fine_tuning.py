@@ -23,10 +23,9 @@ from cascid.configs.config import DATA_DIR
 
 RANDOM_STATE=42
 IMAGE_SIZE = (256,256,3)
-EXPERIMENT_DIR = DATA_DIR / 'experiments_final'
-EPOCHS = 1000
+EXPERIMENT_DIR = DATA_DIR / 'experiments_fine_tuning'
+EPOCHS = 300
 BATCH_SIZE = 200
-ES_PATIENCE = 100
 
 def ResNet(amt_64, amt_128, amt_256, amt_512, quantized, augmentation = False):
     # Aurelien Geron, Hands-On Machine Learning with Scikit-Learn, Keras & Tensorflow.
@@ -106,7 +105,7 @@ def load_results(path):
     
     return model, history
 
-def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int], quantized = False):
+def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], Data2: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], augmentation: bool, learning_rate: float, resnet_size: Tuple[int, int, int, int], quantized = False):
     startdate = datetime.now()
     print("Start execution {}: {}".format(str(path), startdate))
     # keras.backend.clear_session() # Clear session from previous trainings.
@@ -120,6 +119,13 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
     y_train = OHE.fit_transform(y_train)
     y_test = OHE.transform(y_test)
 
+    x_train_2, x_test_2, y_train_2, y_test_2 = Data2
+
+    y_train_2=np.array(list(map(lambda x: "Cancer" if x in ['BCC', 'MEL', 'SCC'] else "Not", y_train_2))).reshape(-1,1)
+    y_test_2=np.array(list(map(lambda x: "Cancer" if x in ['BCC', 'MEL', 'SCC'] else "Not", y_test_2))).reshape(-1,1)
+    y_train_2 = OHE.transform(y_train_2)
+    y_test_2 = OHE.transform(y_test_2)
+
     # print("x_train shape: {0}".format(x_train.shape))
     # print("x_test shape: {0}".format(x_test.shape))
     # print("y_train shape: {0}".format(y_train.shape))
@@ -127,8 +133,15 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
 
     # print("creating model...")
     model = ResNet(*resnet_size, quantized=quantized, augmentation=augmentation)
+    model_fine = ResNet(*resnet_size, quantized=quantized, augmentation=augmentation)
+    
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss=keras.losses.BinaryCrossentropy(),
+        metrics=['acc', keras.metrics.AUC()] # loss is implied
+    )
+    model_fine.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate*0.01),
         loss=keras.losses.BinaryCrossentropy(),
         metrics=['acc', keras.metrics.AUC()] # loss is implied
     )
@@ -137,7 +150,17 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
     MC = keras.callbacks.ModelCheckpoint(
         filepath= str(path / 'checkpoint_epoch{epoch:04d}'),
         save_best_only = True,
-        monitor='val_loss'
+        monitor='val_loss',
+        save_freq=5,
+    )
+
+    ES = keras.callbacks.EarlyStopping(
+        monitor='val_loss',
+        min_delta=0.01,
+        patience=50,
+        verbose=0,
+        mode='min',
+        restore_best_weights=True
     )
 
     # print("training model...")
@@ -148,10 +171,22 @@ def run_and_save(path: Path, Data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.
         batch_size=BATCH_SIZE,
         validation_split=0.2,
         verbose=2, # Only show one line per epoch.
+        callbacks=[ES],
+    )
+
+    model_fine.set_weights(model.get_weights())
+
+    history = model_fine.fit(
+        x_train_2,
+        y_train_2,
+        epochs=EPOCHS//2,
+        batch_size=BATCH_SIZE,
+        validation_split=0.2,
+        verbose=2, # Only show one line per epoch.
         callbacks=[MC],
     )
 
-    dump_results(model, history.history, path)
+    dump_results(model_fine, history.history, path)
     enddate = datetime.now()
     print("End execution {}: {}".format(str(path), enddate))
     print("Total execution time was {}".format(enddate-startdate))
@@ -181,7 +216,7 @@ if __name__ == "__main__":
         # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_raw', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
         # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
         ## HQ
-        # Data = pad_ufes_db.get_train_test_images_hairless_quantized()
+        Data2 = pad_ufes_db.get_train_test_images_hairless_quantized()
         # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_pad_ufes' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
@@ -189,8 +224,8 @@ if __name__ == "__main__":
 
         # ISIC
         ## Hairless
-        Data = isic_db.get_train_test_images_hairless()
-        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
+        # Data = isic_db.get_train_test_images_hairless()
+        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hairless', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hairless', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
@@ -203,8 +238,8 @@ if __name__ == "__main__":
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_raw', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18)
 
         ## HQ
-        # Data = isic_db.get_train_test_images_hairless_quantized()
-        # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
+        Data = isic_db.get_train_test_images_hairless_quantized()
+        run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'aug_hq', Data=Data, Data2 = Data2, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet34' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET34, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'aug_hq', Data=Data, augmentation=True, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
         # run_and_save(EXPERIMENT_DIR / 'final_isic' / 'resnet18' / 'noaug_hq', Data=Data, augmentation=False, learning_rate=LEARNING_RATE, resnet_size=RESNET18, quantized=True)
