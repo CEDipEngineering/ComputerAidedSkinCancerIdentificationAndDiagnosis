@@ -77,7 +77,7 @@ export function MetadataSceen({navigation, route}) {
         <ContainerCheckBox 
           image={SmokeImage}
           title={"smoke"}
-          text={"lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum"}
+          text={"Do you have a history of smoking?"}
           checked={smoke}
           onChange={setSmoke}
         />
@@ -85,7 +85,7 @@ export function MetadataSceen({navigation, route}) {
         <ContainerCheckBox 
           image={DrinkImage}
           title={"drink"}
-          text={"lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum"}
+          text={"Do you have a history of drinking?"}
           checked={drink}
           onChange={setDrink}
         />
@@ -93,7 +93,7 @@ export function MetadataSceen({navigation, route}) {
         <ContainerCheckBox 
           image={PesticideImage}
           title={"pesticide"}
-          text={"lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum"}
+          text={"Do you have a history of exposure to pesticides?"}
           checked={pesticide}
           onChange={setPesticide}
         />
@@ -101,7 +101,7 @@ export function MetadataSceen({navigation, route}) {
         <ContainerCheckBox 
           image={CancerHistoryImage}
           title={"cancer history"}
-          text={"lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum"}
+          text={"Have you ever had any form of cancer?"}
           checked={cancerHistory}
           onChange={setCancerHistory}
         />
@@ -109,7 +109,7 @@ export function MetadataSceen({navigation, route}) {
         <ContainerCheckBox 
           image={SkinCancerHistoryImage}
           title={"skin cancer history"}
-          text={"lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum"}
+          text={"Have you ever had skin cancer?"}
           checked={skinCancerHistory}
           onChange={setSkinCancerHistory}
         />
