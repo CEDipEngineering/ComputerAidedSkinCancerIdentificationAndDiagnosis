@@ -12,3 +12,6 @@ keras
 scikit-learn
 requests
 xgboost
+fastapi
+uvicorn
+python-multipart

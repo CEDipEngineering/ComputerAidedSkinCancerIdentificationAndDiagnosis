@@ -1,56 +1,28 @@
 # Computer Aided Skin Cancer Identification And Diagnosis
 CASCID or Computer Aided Skin Cancer Identification and Diagnosis.
 
+This project was developed in 2022, and was part of the required capstone project for a bachelor's degree in Computer Engineering for the four group members (CEDipEngineering, fernandocfbf, SamuelNPorto, gabriellaec).
 
-Put database already extracted into 'data' folder. Path to an image should be like 'data\images\PAT_8_15_820.png'
+The goal for this project is to create a system for automatic diagnosis of skin cancer using both image and clinical data regarding a patient's history. This was accomplished through use of the [PAD-UFES-20](https://data.mendeley.com/datasets/zr7vgbcyr2/1) dataset, which contains both the necessary types of data. This dataset was not very well balanced, however, and as a means of improving classification performance, and model generalization, the team agreed to use another dataset for images only, as a means of training the image classification models. This dataset is the [ISIC](https://www.isic-archive.com/#!/topWithHeader/wideContentTop/main), an openly available international collaboration for skin cancer image collection.
 
-Database URL: https://data.mendeley.com/datasets/zr7vgbcyr2/1 
+## How to install
 
-# Backlog
+In order to run this project's code, you will need a few things.
 
-## Apresentação (Samuel)
+Requirements:
+- Python 3.8 (or greater) 
+- [Expo Framework](https://docs.expo.dev/get-started/installation/)
 
-- Apresentação
-    - Corrigir a escrita
-    - Figuras (resolução, contraste)
+The Expo framework is only necessary to run the final prototype application, and is not necessary to train, test or analyze the performance of any developed model.
 
-## Relatório (Gabi)
+For ease of installation, a pythonenv.yaml file is included for use with conda, simply importing this environment should work. Another option, is to install the requirements using
 
-- Mudanças no relatório
-    - Atualizar Tabelas
-    - Atualizar Figuras
-    - Corrigir escrita
-    - Complementar análise de dados
+    $ pip install -r requirements.txt
 
-## Melhorias dos modelos
+## Datasets
 
-(Dip)
-- Terminar modelo Stacked
-- Integrar modelo Stacked com API
-- Resolver GPU Monstrão
+**There is no need to download and place any dataset manually.** This project includes scripts that automatically download and organize these files for you, in a hidden folder in your home directory. If you wish to change where these files are installed, then simply alter the variable DATA_DIR at cascid/configs/config.py, and all the files will be downloaded there (WARNING: altering this path after downloading some data will cause all downloaded data to be left stranded in the previous directory, and become inacessible by the module. This means it will need to re-download everything, and some data can be left duplicate on your disk)
 
-(Todos)
-- Criar coluna cor cabelo
+## Examples
 
-    ### Metadados (Samuel)
-
-    - Separação treino/teste considerando pacientes (Colocar como função que retorna x,y train/test no módulo cascid (PAD-UFES))
-    - Analisar inputação de dados (Linhas faltantes mas de mesmo paciente?)
-    - Reduzir ao máximo número de features dos metadados
-
-    ### Imagens
-
-    - Sift/Surf Feature Extraction para entrada em modelo de classificação
-    - Modelo de previsão da cor de cabelo
-    - Extrator de cabelo multifuncional
-    - Incorporar outros pré-processamentos no pipeline de treino/teste dos modelos (Gabi)
-    - Salvar remoção de cabelo em dataset separado (Dip, Gabi)
-    - Restruturar CNN (BatchNormalization, Conv2D repetido) (Dip)
-    - Classificador binário (Fernando)
-    - Fazer testes com dados ISIC (Fernando)
-    - Refatorar dataset com [tf.Data](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) (Fernando)
-
-## Protótipo
-
-- Adicionar questionário de metadados no App (Talvez perguntar cor do cabelo visível na imagem) (Fernando)
-
+The included cascid module has a directory named examples, inside of which there are some example jupyter notebooks on how to get started using the project.
